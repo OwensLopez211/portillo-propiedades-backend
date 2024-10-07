@@ -1,0 +1,75 @@
+<!-- dashboard/templates/dashboard/sidebar.html -->
+<div id="sidebar" class="sidebar collapsed h-screen bg-indigo-700 text-white transition-all duration-300 ease-in-out">
+    <!-- Logo -->
+    <div class="p-4">
+        <div class="text-center text-white font-bold">Logo</div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="mt-10">
+        <!-- Dashboard -->
+        <a href="{% url 'dashboard:dashboard' %}"
+           class="block py-2.5 px-4 rounded transition duration-200 hover:bg-indigo-800 hover:text-white">
+            <span class="inline-flex items-center">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 3h18M9 9h6M3 15h18"></path></svg>
+                <span class="ml-4 menu-item-text">Dashboard</span>
+            </span>
+        </a>
+
+        <!-- Agregar Propiedad -->
+        <a href="{% url 'dashboard:add-property' %}"
+           class="block py-2.5 px-4 rounded transition duration-200 hover:bg-indigo-800 hover:text-white">
+            <span class="inline-flex items-center">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 3h18M9 9h6M3 15h18"></path></svg>
+                <span class="ml-4 menu-item-text">Agregar Propiedad</span>
+            </span>
+        </a>
+
+        <!-- Lista de Propiedades -->
+        <a href="{% url 'dashboard:list-property' %}"
+           class="block py-2.5 px-4 rounded transition duration-200 hover:bg-indigo-800 hover:text-white">
+            <span class="inline-flex items-center">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 3h18M9 9h6M3 15h18"></path></svg>
+                <span class="ml-4 menu-item-text">Lista de Propiedades</span>
+            </span>
+        </a>
+
+        <!-- Agregar Agente -->
+        <a href="/"
+           class="block py-2.5 px-4 rounded transition duration-200 hover:bg-indigo-800 hover:text-white">
+            <span class="inline-flex items-center">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 3h18M9 9h6M3 15h18"></path></svg>
+                <span class="ml-4 menu-item-text">Agregar Agente</span>
+            </span>
+        </a>
+
+        <!-- Subida Masiva -->
+        <a href="{% url 'dashboard:upload-properties' %}"
+           class="block py-2.5 px-4 rounded transition duration-200 hover:bg-indigo-800 hover:text-white">
+            <span class="inline-flex items-center">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                     xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M3 3h18M9 9h6M3 15h18"></path></svg>
+                <span class="ml-4 menu-item-text">Subida Masiva</span>
+            </span>
+        </a>
+    </nav>
+</div>

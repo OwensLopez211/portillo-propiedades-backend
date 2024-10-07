@@ -1,0 +1,40 @@
+<!-- templates/dashboard/userbar.html -->
+
+<div class="w-full bg-gray-800 text-white flex justify-between items-center p-4">
+    <!-- Logo or Title -->
+    <div class="text-lg font-bold">
+        <a href="#" class="text-white hover:text-gray-300"></a>
+    </div>
+
+    <!-- User Icon and Dropdown Menu -->
+    <div class="relative">
+        <button id="user-menu-button" class="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full">
+            <img class="h-8 w-8 rounded-full" src="https://via.placeholder.com/150" alt="User Avatar">
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+            <form method="POST" action="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Toggle the dropdown menu
+    document.getElementById('user-menu-button').addEventListener('click', function () {
+        var menu = document.getElementById('user-menu');
+        menu.classList.toggle('hidden');
+    });
+
+    // Close the dropdown if clicked outside
+    window.addEventListener('click', function(e) {
+        var menuButton = document.getElementById('user-menu-button');
+        var menu = document.getElementById('user-menu');
+        if (!menuButton.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+</script>

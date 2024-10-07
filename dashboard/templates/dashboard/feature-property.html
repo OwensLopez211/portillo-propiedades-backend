@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propiedades Destacadas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex">
+    <!-- Include the Sidebar -->
+    {% include 'dashboard/sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="flex-1 p-10 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-semibold text-gray-700 mb-6">Seleccionar Propiedades Destacadas</h1>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="space-y-4">
+                {% for property in properties %}
+                    <div class="flex items-center">
+                        <!-- Cambiar el nombre para usar un array y pasar el ID de la propiedad -->
+                        <input type="checkbox" name="featured_properties" value="{{ property.id }}" id="property_{{ property.id }}" {% if property.is_featured %}checked{% endif %}>
+                        <label for="property_{{ property.id }}" class="ml-3 text-gray-700">{{ property.title }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="mt-6 w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-lg font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                Guardar Cambios
+            </button>
+        </form>
+    </div>
+</body>
+</html>

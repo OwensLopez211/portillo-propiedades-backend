@@ -1,0 +1,166 @@
+{% load static widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Propiedad</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex">
+
+    <!-- Include the Sidebar -->
+    {% include 'dashboard/sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="flex-1 p-10 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-semibold text-gray-700 mb-6">Editar Propiedad</h1>
+
+        <!-- Mostrar mensajes de éxito/error -->
+        {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                    <div class="p-4 mb-2 {{ message.tags }} bg-green-100 border border-green-300 text-green-800 rounded">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Formulario de Edición de Propiedad -->
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Campos del formulario -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Título</label>
+                    {{ form.title|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="tipo_operacion" class="block text-sm font-medium text-gray-700">Tipo de Operación</label>
+                    {{ form.tipo_operacion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="tipo_propiedad" class="block text-sm font-medium text-gray-700">Tipo de Propiedad</label>
+                    {{ form.tipo_propiedad|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                    {{ form.descripcion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                    {{ form.direccion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="region" class="block text-sm font-medium text-gray-700">Región</label>
+                    {{ form.region|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="comuna" class="block text-sm font-medium text-gray-700">Comuna</label>
+                    {{ form.comuna|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="precio_venta" class="block text-sm font-medium text-gray-700">Precio de Venta</label>
+                    {{ form.precio_venta|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="precio_venta_uf" class="block text-sm font-medium text-gray-700">Precio de Venta (UF)</label>
+                    {{ form.precio_venta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="precio_renta" class="block text-sm font-medium text-gray-700">Precio de Renta</label>
+                    {{ form.precio_renta|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>  
+
+                <div>
+                    <label for="precio_renta_uf" class="block text-sm font-medium text-gray-700">Precio de Renta (UF)</label>
+                    {{ form.precio_renta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="habitaciones" class="block text-sm font-medium text-gray-700">Habitaciones</label>
+                    {{ form.habitaciones|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="baños" class="block text-sm font-medium text-gray-700">Baños</label>
+                    {{ form.baños|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="gastos_comunes" class="block text-sm font-medium text-gray-700">Gastos Comunes</label>
+                    {{ form.gastos_comunes|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="contribuciones" class="block text-sm font-medium text-gray-700">Contribuciones</label>
+                    {{ form.contribuciones|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div>
+                    <label for="agent" class="block text-sm font-medium text-gray-700">Agente</label>
+                    {{ form.agent|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                </div>
+
+                <div class="col-span-1 md:col-span-2">
+                    <label for="is_featured" class="block text-sm font-medium text-gray-700">¿Destacar esta propiedad?</label>
+                    {{ form.is_featured|add_class:"mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" }}
+                </div>
+
+                <!-- Campo de Imágenes -->
+                <div class="col-span-1 md:col-span-2">
+                    <label for="images" class="block text-sm font-medium text-gray-700">Imágenes</label>
+                    <input type="file" name="images" id="images" multiple
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+
+                <!-- Vista Previa de Imágenes Existentes -->
+                <div class="col-span-1 md:col-span-2 mt-6">
+                    <h3 class="text-lg font-medium text-gray-700">Imágenes Existentes</h3>
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        {% for image in images %}
+                            <div class="relative w-full h-32 bg-gray-100 rounded-md overflow-hidden shadow-md">
+                                <img src="{{ image.image.url }}" alt="Image" class="object-cover w-full h-full">
+                
+                                <!-- Botón para eliminar la imagen -->
+                                <form method="post" action="{% url 'dashboard:delete-property-image' property.id image.id %}" class="absolute top-2 right-2">
+                                    {% csrf_token %}
+                                    <button type="submit" class="bg-red-600 text-white p-1 rounded-full focus:outline-none">
+                                        &#10005; <!-- X icon -->
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            <!-- Botón de Guardar Cambios -->
+            <div class="pt-6">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+                    Guardar Cambios
+                </button>
+            </div>
+        </form>
+
+        <!-- Formulario de Eliminación -->
+        <form method="post" action="{% url 'dashboard:delete-property' property.id %}" class="mt-4">
+            {% csrf_token %}
+            <button type="submit" name="delete" value="delete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                Eliminar Propiedad
+            </button>
+        </form>
+    </div>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

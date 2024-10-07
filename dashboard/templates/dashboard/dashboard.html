@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex">
+    
+    <!-- Include the Sidebar (Vertical) -->
+    {% include 'dashboard/sidebar.html' %}
+    
+    <!-- Mostrar mensajes de éxito/error -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+            <div class="p-4 mb-2 {{ message.tags }} bg-green-100 border border-green-300 text-green-800 rounded">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <!-- Main Content Area with Horizontal Userbar -->
+    <div class="flex flex-col w-full">
+        <!-- Include the User Bar (Horizontal) -->
+        {% include 'dashboard/userbar.html' %}
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <h1 class="text-2xl font-semibold text-gray-700">Dashboard</h1>
+            
+            <!-- Card for Total Properties -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-bold text-gray-800">Total de Propiedades</h2>
+                    <p class="text-3xl text-gray-600">{{ total_properties }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

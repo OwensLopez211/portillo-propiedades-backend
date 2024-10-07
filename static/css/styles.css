@@ -1,0 +1,21 @@
+
+/* styles.css */
+.sidebar:hover {
+    width: 64px; /* Ancho pequeño cuando se hace hover */
+}
+
+.sidebar.expanded {
+    width: 240px; /* Ancho completo cuando está expandido */
+}
+
+.sidebar.collapsed {
+    width: 64px; /* Ancho pequeño cuando está colapsado */
+}
+
+.sidebar.collapsed .menu-item-text {
+    display: none; /* Ocultar el texto cuando la sidebar está colapsada */
+}
+
+.sidebar.expanded .menu-item-text {
+    display: inline-block; /* Mostrar el texto cuando la sidebar está expandida */
+}

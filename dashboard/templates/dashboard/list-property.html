@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Propiedades</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex">
+
+    <!-- Include the Sidebar -->
+    {% include 'dashboard/sidebar.html' %}
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col">
+        
+        <!-- Include the Userbar -->
+        {% include 'dashboard/userbar.html' %}
+        
+        <!-- Main Content -->
+        <div class="p-10 bg-white rounded-lg shadow-lg flex-1">
+            <h1 class="text-3xl font-semibold text-gray-700 mb-6">Lista de Propiedades</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for property in properties %}
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                    <!-- Mostrar el código de propiedad -->
+                    <p class="text-sm text-gray-500">Código: {{ property.id }}</p>
+                    
+                    <!-- Mostrar el título de la propiedad -->
+                    <h2 class="text-xl font-bold text-gray-800">{{ property.title }}</h2>
+
+                    <!-- Mostrar el agente asociado -->
+                    <p class="text-gray-700 mt-2"><strong>Agente:</strong> {{ property.agent }}</p>
+                    
+                    <div class="mt-4 flex justify-between">
+                        <!-- Link para editar -->
+                        <a href="{% url 'dashboard:edit-property' property.id %}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+
+                        <!-- Formulario para eliminar -->
+                        <form method="post" action="{% url 'dashboard:delete-property' property.id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta propiedad?');">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>

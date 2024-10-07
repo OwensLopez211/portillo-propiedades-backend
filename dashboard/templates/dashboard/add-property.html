@@ -1,0 +1,208 @@
+{% load static widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Propiedad</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex">
+
+    <!-- Include the Sidebar -->
+    {% include 'dashboard/sidebar.html' %}
+
+    <!-- Main Content Wrapper -->
+    <div class="flex-1 flex flex-col">
+        
+        <!-- Include the Userbar -->
+        {% include 'dashboard/userbar.html' %}
+        
+        <!-- Main Content -->
+        <div class="p-10 bg-white rounded-lg shadow-lg flex-1">
+            <h1 class="text-3xl font-semibold text-gray-700 mb-6">Agregar Propiedad</h1>
+
+            <!-- Mostrar mensajes de éxito/error -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="p-4 mb-2 {{ message.tags }} bg-green-100 border border-green-300 text-green-800 rounded">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Título -->
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700">Título</label>
+                        {{ form.title|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        <!-- Mostrar errores de campo -->
+                        {% if form.title.errors %}
+                            <div class="text-red-600 text-sm">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Tipo de Operación -->
+                    <div>
+                        <label for="tipo_operacion" class="block text-sm font-medium text-gray-700">Tipo de Operación</label>
+                        {{ form.tipo_operacion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.tipo_operacion.errors %}
+                            <div class="text-red-600 text-sm">{{ form.tipo_operacion.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Tipo de Propiedad -->
+                    <div>
+                        <label for="property_type" class="block text-sm font-medium text-gray-700">Tipo de propiedad</label>
+                        {{ form.tipo_propiedad|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.tipo_propiedad.errors %}
+                            <div class="text-red-600 text-sm">{{ form.tipo_propiedad.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Descripción (Ancho Completo) -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="description" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        {{ form.descripcion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-red-600 text-sm">{{ form.descripcion.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Dirección -->
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700">Dirección</label>
+                        {{ form.direccion|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.direccion.errors %}
+                            <div class="text-red-600 text-sm">{{ form.direccion.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Región -->
+                    <div>
+                        <label for="region" class="block text-sm font-medium text-gray-700">Región</label>
+                        {{ form.region|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.region.errors %}
+                            <div class="text-red-600 text-sm">{{ form.region.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Comuna -->
+                    <div>
+                        <label for="comuna" class="block text-sm font-medium text-gray-700">Comuna</label>
+                        {{ form.comuna|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.comuna.errors %}
+                            <div class="text-red-600 text-sm">{{ form.comuna.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Precio de Venta -->
+                    <div>
+                        <label for="sale_price" class="block text-sm font-medium text-gray-700">Precio venta</label>
+                        {{ form.precio_venta|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.precio_venta.errors %}
+                            <div class="text-red-600 text-sm">{{ form.precio_venta.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Precio Venta (UF) -->
+                    <div>
+                        <label for="precio_venta_uf" class="block text-sm font-medium text-gray-700">Precio venta (UF)</label>
+                        {{ form.precio_venta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.precio_venta_uf.errors %}
+                            <div class="text-red-600 text-sm">{{ form.precio_venta_uf.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Precio de Renta -->
+                    <div>
+                        <label for="rent_price" class="block text-sm font-medium text-gray-700">Precio renta</label>
+                        {{ form.precio_renta|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.precio_renta.errors %}
+                            <div class="text-red-600 text-sm">{{ form.precio_renta.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Precio Renta (UF) -->
+                    <div>
+                        <label for="precio_renta_uf" class="block text-sm font-medium text-gray-700">Precio renta (UF)</label>
+                        {{ form.precio_renta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.precio_renta_uf.errors %}
+                            <div class="text-red-600 text-sm">{{ form.precio_renta_uf.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Habitaciones -->
+                    <div>
+                        <label for="bedrooms" class="block text-sm font-medium text-gray-700">Habitaciones</label>
+                        {{ form.habitaciones|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.habitaciones.errors %}
+                            <div class="text-red-600 text-sm">{{ form.habitaciones.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Baños -->
+                    <div>
+                        <label for="bathrooms" class="block text-sm font-medium text-gray-700">Baños</label>
+                        {{ form.baños|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.baños.errors %}
+                            <div class="text-red-600 text-sm">{{ form.baños.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Gastos Comunes -->
+                    <div>
+                        <label for="common_expenses" class="block text-sm font-medium text-gray-700">Gastos comunes</label>
+                        {{ form.gastos_comunes|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.gastos_comunes.errors %}
+                            <div class="text-red-600 text-sm">{{ form.gastos_comunes.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contribuciones -->
+                    <div>
+                        <label for="contributions" class="block text-sm font-medium text-gray-700">Contribuciones</label>
+                        {{ form.contribuciones|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.contribuciones.errors %}
+                            <div class="text-red-600 text-sm">{{ form.contribuciones.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Agente -->
+                    <div>
+                        <label for="agent" class="block text-sm font-medium text-gray-700">Agente</label>
+                        {{ form.agent|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
+                        {% if form.agent.errors %}
+                            <div class="text-red-600 text-sm">{{ form.agent.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Destacar Propiedad -->
+                    <div class="col-span-1 md:col-span-2">
+                        <label for="is_featured" class="block text-sm font-medium text-gray-700">¿Destacar esta propiedad?</label>
+                        {{ form.is_featured|add_class:"mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" }}
+                    </div>
+                </div>
+                <div class="col-span-1 md:col-span-2">
+                    <label for="images" class="block text-sm font-medium text-gray-700">Imágenes</label>
+                    <input type="file" name="images" id="images" multiple
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                </div>
+                <!-- Botón de Enviar -->
+                <div class="pt-6">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
+                        Publicar Propiedad
+                    </button>                
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>
