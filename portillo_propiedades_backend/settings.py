@@ -21,9 +21,6 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-ALLOWED_HOSTS = ['4b2a-2800-150-11e-15ca-351e-f136-dd02-da85.ngrok-free.app', 'localhost', '127.0.0.1']
-
 # Configuración del correo electrónico
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
