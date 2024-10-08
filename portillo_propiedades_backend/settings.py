@@ -110,13 +110,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': 'corredorapropiedadesdb',  # Nombre de la base de datos
+        'USER': 'corredormaster',          # Usuario
+        'PASSWORD': 'RH6iAvBDkd1Bz9UZSX3OyJ98K5NaNrJq',  # Tu contraseña
+        'HOST': 'dpg-cs2829e8ii6s739da6sg-a.virginia-postgres.render.com',  # Hostname de la base de datos en Render
+        'PORT': '5432',                    # Puerto
     }
 }
+
 
 
 
