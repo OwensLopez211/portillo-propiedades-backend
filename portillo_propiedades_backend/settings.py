@@ -13,9 +13,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
-# Obtén el puerto desde las variables de entorno y establece un valor por defecto
-PORT = int(os.environ.get('PORT', 8000))
-
 # Acceder a las variables
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
