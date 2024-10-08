@@ -13,34 +13,28 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 
+# Obtén el puerto desde las variables de entorno y establece un valor por defecto
+PORT = int(os.environ.get('PORT', 8000))
 
 # Acceder a las variables
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG = os.getenv('DEBUG') == 'True'
-DATABASE_URL = os.getenv('DATABASE_URL')
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-qg604b(27j*tse18)8mor*k^hz1(u9i%_wdbhw)a^$7j-d9_gf'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = ['4b2a-2800-150-11e-15ca-351e-f136-dd02-da85.ngrok-free.app', 'localhost', '127.0.0.1']
 
+# Configuración del correo electrónico
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'propiedadesportilla0@gmail.com'  # Tu dirección de correo Gmail
-EMAIL_HOST_PASSWORD = 'bduj fexh csms ruoo'  # Usa aquí la contraseña de aplicación que creaste
-DEFAULT_FROM_EMAIL = 'propiedadesportilla0@gmail.com'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 
@@ -75,12 +69,9 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "https://4b2a-2800-150-11e-15ca-351e-f136-dd02-da85.ngrok-free.app",  # React's default development server
-]
-
-CSRF_TRUSTED_ORIGINS = ['https://4b2a-2800-150-11e-15ca-351e-f136-dd02-da85.ngrok-free.app']
+# CORS
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
 
 # Agregar esto para permitir solicitudes sin CSRF temporalmente
 CSRF_COOKIE_SECURE = False
@@ -121,14 +112,15 @@ WSGI_APPLICATION = 'portillo_propiedades_backend.wsgi.application'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Configuración de la base de datos
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'corredorapropiedadesdb',
-        'USER': 'corredormaster',
-        'PASSWORD': '21323440An.',
-        'HOST': 'localhost',  # Si usas un servidor remoto, cámbialo por la IP o el nombre del host
-        'PORT': '5432',  # Puerto predeterminado para PostgreSQL
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
