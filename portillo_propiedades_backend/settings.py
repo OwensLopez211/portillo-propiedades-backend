@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import os
+import cloudinary  # Asegúrate de importar el módulo Cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 
 # Acceder a las variables
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
@@ -52,12 +57,15 @@ INSTALLED_APPS = [
     'cloudinary_storage',
 ]
 
-# Configuración de Cloudinary
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-}
+# Usar la variable de entorno CLOUDINARY_URL
+CLOUDINARY_URL = os.getenv('CLOUDINARY_URL')
+
+# Configurar Cloudinary con la URL de conexión
+cloudinary.config(
+    cloudinary_url=CLOUDINARY_URL
+)
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 # Configurar default storage para Cloudinary

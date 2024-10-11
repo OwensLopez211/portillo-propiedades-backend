@@ -110,15 +110,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Precio Venta (UF) -->
-                    <div>
-                        <label for="precio_venta_uf" class="block text-sm font-medium text-gray-700">Precio venta (UF)</label>
-                        {{ form.precio_venta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
-                        {% if form.precio_venta_uf.errors %}
-                            <div class="text-red-600 text-sm">{{ form.precio_venta_uf.errors }}</div>
-                        {% endif %}
-                    </div>
-
                     <!-- Precio de Renta -->
                     <div>
                         <label for="rent_price" class="block text-sm font-medium text-gray-700">Precio renta</label>
@@ -128,14 +119,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Precio Renta (UF) -->
-                    <div>
-                        <label for="precio_renta_uf" class="block text-sm font-medium text-gray-700">Precio renta (UF)</label>
-                        {{ form.precio_renta_uf|add_class:"mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" }}
-                        {% if form.precio_renta_uf.errors %}
-                            <div class="text-red-600 text-sm">{{ form.precio_renta_uf.errors }}</div>
-                        {% endif %}
-                    </div>
 
                     <!-- Habitaciones -->
                     <div>
