@@ -5,6 +5,7 @@ from properties.forms import PropertyForm
 from properties.models import Property, PropertyImage, Region, Comuna, Agent
 from django.db import IntegrityError, transaction
 from django.urls import reverse
+from cloudinary.uploader import destroy  # Importar función para eliminar imágenes de Cloudinary
 import csv
 
 @login_required
@@ -84,6 +85,7 @@ def delete_property_image(request, property_id, image_id):
     return redirect(reverse('dashboard:edit-property', args=[property_id]))
 
 
+
 @login_required
 def delete_property_view(request, property_id):
     property_instance = get_object_or_404(Property, id=property_id)
@@ -94,8 +96,12 @@ def delete_property_view(request, property_id):
                 # Primero, elimina las imágenes asociadas
                 images = PropertyImage.objects.filter(property=property_instance)
                 for image in images:
-                    print(f"Eliminando imagen: {image.image.path}")  # Mensaje de depuración
-                    image.delete()  # Elimina la imagen de la base de datos y del sistema de archivos
+                    # Eliminar la imagen de Cloudinary usando el public_id
+                    if image.image:
+                        print(f"Eliminando imagen: {image.image.public_id}")  # Mensaje de depuración
+                        destroy(image.image.public_id)  # Elimina la imagen de Cloudinary
+                    # Eliminar el objeto de imagen de la base de datos
+                    image.delete()
                 
                 # Luego, elimina la propiedad
                 property_instance.delete()
@@ -106,6 +112,7 @@ def delete_property_view(request, property_id):
         return redirect(reverse('dashboard:list-property'))
 
     return redirect(reverse('dashboard:edit-property', args=[property_id]))
+
 
 @login_required
 def feature_property_view(request):

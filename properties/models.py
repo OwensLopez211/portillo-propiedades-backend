@@ -87,12 +87,7 @@ class PropertyImage(models.Model):
         return f"Image for {self.property.title}"
 
     def delete(self, *args, **kwargs):
-        # Eliminar todas las imágenes asociadas antes de eliminar la propiedad
-        for image in self.images.all():
-            image.delete()  # Llamar al método delete del modelo PropertyImage
-        super(Property, self).delete(*args, **kwargs)  # Llamar al delete original para eliminar la propiedad
-
-    def clean(self):
-        # Validación para permitir solo ciertos tipos de imagen
-        if imghdr.what(self.image.file) not in ['jpeg', 'png', 'jpg']:
-            raise ValidationError('Solo se permiten archivos JPEG, PNG o GIF.')
+        # Eliminar la imagen de Cloudinary usando el public_id
+        if self.image:
+            cloudinary.uploader.destroy(self.image.public_id)
+        super(PropertyImage, self).delete(*args, **kwargs)
