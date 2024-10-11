@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from cloudinary.models import CloudinaryField  # Importar CloudinaryField
+from cloudinary.models import CloudinaryField  
 from django.core.exceptions import ValidationError
 import imghdr
 
