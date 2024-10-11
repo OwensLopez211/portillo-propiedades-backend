@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+import cloudinary.uploader
 from cloudinary.models import CloudinaryField  
 from django.core.exceptions import ValidationError
 import imghdr
@@ -80,12 +81,18 @@ class Property(models.Model):
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, related_name='images', on_delete=models.CASCADE)
-    image = CloudinaryField('image')  # Cambiar a CloudinaryField para manejar las imágenes de las propiedades
+    image = CloudinaryField('image')  # Usando CloudinaryField para manejar las imágenes
 
     def __str__(self):
         return f"Image for {self.property.title}"
 
+    def delete(self, *args, **kwargs):
+        # Eliminar todas las imágenes asociadas antes de eliminar la propiedad
+        for image in self.images.all():
+            image.delete()  # Llamar al método delete del modelo PropertyImage
+        super(Property, self).delete(*args, **kwargs)  # Llamar al delete original para eliminar la propiedad
+
     def clean(self):
         # Validación para permitir solo ciertos tipos de imagen
-        if imghdr.what(self.image.file) not in ['jpeg', 'png', 'gif']:
+        if imghdr.what(self.image.file) not in ['jpeg', 'png', 'jpg']:
             raise ValidationError('Solo se permiten archivos JPEG, PNG o GIF.')
