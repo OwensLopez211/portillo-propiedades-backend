@@ -48,8 +48,20 @@ INSTALLED_APPS = [
     'dashboard',
     'widget_tweaks',
     'contact',
-    
+    'cloudinary',
+    'cloudinary_storage',
 ]
+
+# Configuración de Cloudinary
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dcb376sxh',
+    'API_KEY': '146585744356552',
+    'API_SECRET': 'Yk0KCQxsl00MH34gI-P-COXvGOA'
+}
+
+
+# Configurar default storage para Cloudinary
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -110,11 +122,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': 'corredorapropiedadesdb',
+        'USER': 'corredormaster',
+        'PASSWORD': 'RH6iAvBDkd1Bz9UZSX3OyJ98K5NaNrJq',
+        'HOST': 'dpg-cs2829e8ii6s739da6sg-a.virginia-postgres.render.com',
+        'PORT': '5432',
     }
 }
 

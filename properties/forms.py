@@ -13,9 +13,7 @@ class PropertyForm(forms.ModelForm):
             'region',       
             'comuna',      
             'precio_venta',
-            'precio_venta_uf',  # Añadir precio_venta_uf
             'precio_renta',
-            'precio_renta_uf',  # Añadir precio_renta_uf
             'habitaciones',
             'baños',
             'gastos_comunes',

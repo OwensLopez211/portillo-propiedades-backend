@@ -1,8 +1,9 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from cloudinary.models import CloudinaryField  # Importar CloudinaryField
 from django.core.exceptions import ValidationError
 import imghdr
-from django.contrib.auth.models import User
 
 class Agent(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='agent_profile', null=True, blank=True)
@@ -10,11 +11,11 @@ class Agent(models.Model):
     role = models.CharField(max_length=50)
     phone = models.CharField(max_length=20)
     email = models.EmailField()
-    profile_image = models.ImageField(upload_to='agent_profiles/', null=True, blank=True)  # Campo para imagen de perfil
+    profile_image = CloudinaryField('image', null=True, blank=True)  # Cambiar a CloudinaryField para manejar la imagen de perfil
 
     def __str__(self):
         return self.name
-    
+
 # Modelo para Región
 class Region(models.Model):
     nombre = models.CharField(max_length=100)
@@ -58,13 +59,8 @@ class Property(models.Model):
     tipo_propiedad = models.CharField(max_length=50, choices=PROPERTY_TYPE_CHOICES, default='casa')
     descripcion = models.TextField()
     direccion = models.CharField(max_length=255)
-    
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    precio_venta_uf = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # Campo para UF de venta
-    
     precio_renta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    precio_renta_uf = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # Campo para UF de arriendo
-    
     habitaciones = models.IntegerField()
     baños = models.IntegerField()
     gastos_comunes = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -84,20 +80,12 @@ class Property(models.Model):
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='property_images/')
+    image = CloudinaryField('image')  # Cambiar a CloudinaryField para manejar las imágenes de las propiedades
 
     def __str__(self):
         return f"Image for {self.property.title}"
 
     def clean(self):
         # Validación para permitir solo ciertos tipos de imagen
-        if imghdr.what(self.image) not in ['jpeg', 'png', 'gif']:
+        if imghdr.what(self.image.file) not in ['jpeg', 'png', 'gif']:
             raise ValidationError('Solo se permiten archivos JPEG, PNG o GIF.')
-
-    def delete(self, *args, **kwargs):
-        # Elimina el archivo físico
-        if self.image:
-            print(f"Eliminando archivo físico: {self.image.path}")  # Mensaje de depuración
-            self.image.delete(save=False)  # Elimina el archivo físico
-        # Llama al método delete original
-        super(PropertyImage, self).delete(*args, **kwargs)
