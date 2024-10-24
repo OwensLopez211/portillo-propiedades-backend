@@ -9,13 +9,12 @@ from django.urls import get_resolver
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    path('api/', include('properties.urls')),  # Las rutas de 'properties' estarán bajo el prefijo 'api/'
+    path('api/', include('properties.urls')), 
     path('logout/', LogoutView.as_view(), name='logout'),
     path('contact/', include('contact.urls')),
     path('', include('users.urls')),  # Incluir las rutas de 'users'
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Herramienta de depuración para imprimir todas las URL patterns
 url_patterns = get_resolver().url_patterns
