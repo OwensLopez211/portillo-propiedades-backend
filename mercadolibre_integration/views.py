@@ -1,12 +1,18 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import requests
+import json
 
 @csrf_exempt
 def get_token(request):
     if request.method == 'POST':
-        code = request.POST.get('code')  # El código de autorización enviado desde el frontend
-        code_verifier = request.POST.get('code_verifier')  # El code_verifier enviado desde el frontend
+        try:
+            # Cargar el cuerpo de la solicitud como JSON
+            data = json.loads(request.body)
+            code = data.get('code')  # El código de autorización enviado desde el frontend
+            code_verifier = data.get('code_verifier')  # El code_verifier enviado desde el frontend
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format'}, status=400)
 
         if not code or not code_verifier:
             return JsonResponse({'error': 'Missing code or code_verifier'}, status=400)
