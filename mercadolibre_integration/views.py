@@ -1,5 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from decouple import config
 import requests
 import json
 
@@ -20,15 +21,18 @@ def get_token(request):
         # Intercambiar el código por un token de acceso
         response = requests.post(
             'https://api.mercadolibre.com/oauth/token',
+            headers={'Content-type': 'application/x-www-form-urlencoded'}
             data={
                 'grant_type': 'authorization_code',
-                'client_id': 'YOUR_CLIENT_ID',
-                'client_secret': 'YOUR_CLIENT_SECRET',
+                'client_id': config('MERCADOLIBRE_CLIENT_ID'),
+                'client_secret': config('MERCADOLIBRE_CLIENT_SECRET'),
                 'code': code,
-                'redirect_uri': 'https://portillo-propiedades-frontend.vercel.app/callback',  # Debe coincidir con la redirect_uri
+                'redirect_uri': config('MERCADOLIBRE_REDIRECT_URI'),
                 'code_verifier': code_verifier,
             }
         )
+        print('Client ID:', config('MERCADOLIBRE_CLIENT_ID'))
+        print('Client Secret:', config('MERCADOLIBRE_CLIENT_SECRET'))
 
         token_data = response.json()
 
