@@ -116,8 +116,9 @@ print(f"DEBUG: {DEBUG}")
 
 
 # Agregar esto para permitir solicitudes sin CSRF temporalmente
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+
 
 CORS_ALLOW_CREDENTIALS = True
 
