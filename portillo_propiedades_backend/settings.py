@@ -11,11 +11,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, json
+from datetime import timedelta
+
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # Acceder a las variables
 SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -45,11 +50,11 @@ INSTALLED_APPS = [
     'properties',
     'corsheaders',
     'rest_framework',
-    'dashboard',
     'widget_tweaks',
     'contact',
     'cloudinary',
     'cloudinary_storage',
+    'users',
 ]
 
 # Configuración de Cloudinary
@@ -75,9 +80,29 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 # CORS
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = json.loads(os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:3000"]'))
+CSRF_TRUSTED_ORIGINS = json.loads(os.getenv('CSRF_TRUSTED_ORIGINS', '["http://localhost:3000"]'))
+
+ALLOWED_HOSTS = ['*']
+print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
+print(f"DEBUG: {DEBUG}")
+
 
 # Agregar esto para permitir solicitudes sin CSRF temporalmente
 CSRF_COOKIE_SECURE = False

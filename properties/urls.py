@@ -1,22 +1,28 @@
-from django.urls import path
-from .views import (
-    AgentListCreateView,
-    PropertyListCreateView, 
-    PropertyDetailView, 
-    FeaturedPropertiesAPIView, 
-    PropertyListView)
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AgentViewSet
+from .views import (
+    DeletePropertyImageView,
+    PropertyListCreateView, 
+    PropertyDetailView,
+    FeaturedPropertiesAPIView,
+    PropertyListView,
+    mercado_libre_callback,
+    AgentViewSet,
+)
 
+# Configuración del router para los agentes
 router = DefaultRouter()
 router.register(r'agents', AgentViewSet)
 
+# Definición de las URL patterns
 urlpatterns = [
-    path('agents/', AgentListCreateView.as_view(), name='agent-list-create'),
-    path('properties/', PropertyListCreateView.as_view(), name='property-list-create'),
-    path('properties/<int:pk>/', PropertyDetailView.as_view(), name='property-detail'),
-    path('featured-properties/', FeaturedPropertiesAPIView.as_view(), name='featured-properties-api'),
-    path('property-list/', PropertyListView.as_view(), name='property-list'),  # Esta es la URL que debería estar disponible.
+    path('properties/', PropertyListCreateView.as_view(), name='property-list-create'),  # Listar y crear propiedades
+    path('properties/<int:pk>/', PropertyDetailView.as_view(), name='property-detail'),  # Detalle, actualizar y eliminar propiedades
+    path('featured-properties/', FeaturedPropertiesAPIView.as_view(), name='featured-properties-api'),  # Propiedades destacadas
+    path('property-list/', PropertyListView.as_view(), name='property-list'),  # Listar propiedades con filtros
+    path('property-images/<int:pk>/', DeletePropertyImageView.as_view(), name='delete-property-image'),  # Eliminar imágenes
+    path('notifications/callback/', mercado_libre_callback, name='mercado_libre_callback'),  # Callback de notificaciones de MercadoLibre
 ]
 
+# Agregar las rutas del router (para agentes)
 urlpatterns += router.urls

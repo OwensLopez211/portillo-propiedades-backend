@@ -2,19 +2,18 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from django.contrib.auth.views import LogoutView
-from .views import CustomLoginView 
+from .views import LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import get_resolver
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
-    path('dashboard/', include('dashboard.urls')),  # Incluir la ruta del dashboard
+
     path('api/', include('properties.urls')),  # Las rutas de 'properties' estarán bajo el prefijo 'api/'
+    path('logout/', LogoutView.as_view(), name='logout'),
     path('contact/', include('contact.urls')),
+    path('', include('users.urls')),  # Incluir las rutas de 'users'
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

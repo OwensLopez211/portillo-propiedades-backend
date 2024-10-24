@@ -1,15 +1,10 @@
-from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
+from django.contrib.auth import logout
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
-class CustomLoginView(LoginView):
-    template_name = 'login.html'
-    redirect_authenticated_user = True
-
-    def get_success_url(self):
-        # Usa el espacio de nombres aquí
-        return reverse_lazy('dashboard:dashboard')
-
-    def get_template_names(self):
-        print("Looking for template in:", self.template_name)
-        return [self.template_name]
-
+class LogoutView(APIView):
+    def post(self, request):
+        # Invalida la sesión del usuario
+        logout(request)
+        return Response({"message": "Sesión cerrada correctamente"}, status=status.HTTP_200_OK)
