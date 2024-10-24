@@ -13,6 +13,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('contact/', include('contact.urls')),
     path('', include('users.urls')),  # Incluir las rutas de 'users'
+    path('mercadolibre/', include('mercadolibre_integration.urls')),  # Incluye las rutas de 'mercadolibre_integration'
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
