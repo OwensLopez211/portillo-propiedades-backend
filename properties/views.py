@@ -73,7 +73,7 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
             # Guarda los datos actualizados de la propiedad
             serializer.save()
 
-            # Manejar las imágenes si se están subiendo
+            # Manejar las imágenes a eliminar
             images_to_delete = request.data.get('imagesToDelete', [])
             if images_to_delete:
                 images_to_delete = json.loads(images_to_delete)  # Convertir el JSON a lista
@@ -84,6 +84,12 @@ class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
                         image.delete()  # Eliminar de la base de datos
                     except PropertyImage.DoesNotExist:
                         continue
+
+            # **Manejo de nuevas imágenes**: Asegúrate de procesar las imágenes nuevas
+            new_images = request.FILES.getlist('images')  # 'images' debe ser el nombre del campo en el formulario
+            for image in new_images:
+                # Crear una nueva instancia de PropertyImage y asociarla con la propiedad
+                PropertyImage.objects.create(property=property_instance, image=image)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         
