@@ -96,8 +96,9 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:3000"]')
-csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '["http://localhost:3000"]')
+# Variables de entorno para CORS y CSRF
+cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:3000"]').replace("'", '"')
+csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '["http://localhost:3000"]').replace("'", '"')
 
 try:
     CORS_ALLOWED_ORIGINS = json.loads(cors_origins)
@@ -109,6 +110,8 @@ try:
 except json.JSONDecodeError:
     CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
+# Permitir el uso de credenciales
+CORS_ALLOW_CREDENTIALS = True
 
 ALLOWED_HOSTS = ['*']
 print(f"ALLOWED_HOSTS: {ALLOWED_HOSTS}")
