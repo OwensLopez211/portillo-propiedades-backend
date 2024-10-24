@@ -96,19 +96,16 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Variables de entorno para CORS y CSRF
-cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '["http://localhost:3000"]').replace("'", '"')
-csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '["http://localhost:3000"]').replace("'", '"')
+CORS_ALLOWED_ORIGINS = [
+    "https://portillo-propiedades-frontend.vercel.app",
+    "http://localhost:3000",
+]
 
-try:
-    CORS_ALLOWED_ORIGINS = json.loads(cors_origins)
-except json.JSONDecodeError:
-    CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://portillo-propiedades-frontend.vercel.app",
+    "http://localhost:3000",
+]
 
-try:
-    CSRF_TRUSTED_ORIGINS = json.loads(csrf_origins)
-except json.JSONDecodeError:
-    CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
 
 # Permitir el uso de credenciales
 CORS_ALLOW_CREDENTIALS = True
@@ -121,10 +118,6 @@ print(f"DEBUG: {DEBUG}")
 # Agregar esto para permitir solicitudes sin CSRF temporalmente
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-
-
-CORS_ALLOW_CREDENTIALS = True
-
 
 ROOT_URLCONF = 'portillo_propiedades_backend.urls'
 
