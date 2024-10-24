@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'users',
+    'mercadolibre_integration'
 ]
 
 # Configuración de Cloudinary
