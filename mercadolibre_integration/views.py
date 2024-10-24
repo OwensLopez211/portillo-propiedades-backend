@@ -21,7 +21,7 @@ def get_token(request):
         # Intercambiar el código por un token de acceso
         response = requests.post(
             'https://api.mercadolibre.com/oauth/token',
-            headers={'Content-type': 'application/x-www-form-urlencoded'}
+            headers={'Content-type': 'application/x-www-form-urlencoded'},
             data={
                 'grant_type': 'authorization_code',
                 'client_id': config('MERCADOLIBRE_CLIENT_ID'),
