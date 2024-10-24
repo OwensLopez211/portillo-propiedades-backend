@@ -43,3 +43,38 @@ def get_token(request):
 
     # Manejar las solicitudes GET o cualquier otro método no permitido
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt  # Desactiva la protección CSRF si es necesario
+def unlink_mercadolibre(request):
+    if request.method == 'POST':
+        # Aquí puedes manejar la lógica de desincronización
+        # Actualmente no tienes modelos, así que simplemente devolvemos un mensaje de éxito.
+        
+        # Si en el futuro decides hacer algo como registrar eventos de desincronización o notificar
+        # al backend sobre la acción, puedes agregar la lógica aquí.
+
+        return JsonResponse({'message': 'Desincronización exitosa con MercadoLibre'}, status=200)
+    
+    # Si el método HTTP no es POST, devuelve un error
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+
+
+
+#no implementado aun
+def refresh_access_token(refresh_token):
+    response = requests.post(
+        'https://api.mercadolibre.com/oauth/token',
+        data={
+            'grant_type': 'refresh_token',
+            'client_id': config('MERCADOLIBRE_CLIENT_ID'),
+            'client_secret': config('MERCADOLIBRE_CLIENT_SECRET'),
+            'refresh_token': refresh_token,
+        }
+    )
+
+    if response.status_code == 200:
+        token_data = response.json()
+        return token_data  # Devolver los nuevos tokens (access_token y refresh_token)
+    else:
+        return None  # Manejar el error si es necesario
