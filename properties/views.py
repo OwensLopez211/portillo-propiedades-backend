@@ -62,7 +62,7 @@ class PropertyListCreateView(generics.ListCreateAPIView):
 class PropertyDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def update(self, request, *args, **kwargs):
         # Obtén la instancia de la propiedad que se va a actualizar
