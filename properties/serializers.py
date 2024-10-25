@@ -31,7 +31,7 @@ class AgentSerializer(serializers.ModelSerializer):
 
 class PropertySerializer(serializers.ModelSerializer):
     images = PropertyImageSerializer(many=True, read_only=True)  # Para listar las imágenes relacionadas
-    agent = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all(), required=False)  # Permitir enviar el ID del agente
+    agent = AgentSerializer(read_only=True)  # Permitir enviar el ID del agente
 
     class Meta:
         model = Property
