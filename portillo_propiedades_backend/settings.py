@@ -101,10 +101,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://portillo-propiedades-frontend.vercel.app",
-    "http://localhost:3000",
-]
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+
 
 CORS_ALLOW_METHODS = [
     'DELETE',
