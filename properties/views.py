@@ -4,13 +4,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
-from .models import Agent, Property, PropertyImage
+from .models import Agent, Property, PropertyImage, Comuna
 from .serializers import PropertySerializer, AgentSerializer
 import cloudinary.uploader
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
+import pandas as pd
+from rest_framework.parsers import MultiPartParser, FormParser
 
 logger = logging.getLogger(__name__)
 
@@ -210,3 +212,54 @@ def mercado_libre_callback(request):
             return JsonResponse({'error': 'Invalid data format'}, status=400)
     logger.warning(f'Método HTTP no permitido: {request.method}')
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+class MassPropertyUploadView(APIView):
+    parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos en la solicitud
+    permission_classes = [IsAdminUser]  # Solo los administradores pueden subir propiedades masivamente
+
+    def post(self, request):
+        # Verificar si hay un archivo CSV
+        csv_file = request.FILES.get('csv')
+        if not csv_file:
+            return Response({"error": "No se subió un archivo CSV"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Leer el archivo CSV
+        try:
+            df = pd.read_csv(csv_file)
+        except Exception as e:
+            return Response({"error": f"Error al leer el archivo CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Procesar cada fila del CSV
+        for index, row in df.iterrows():
+            try:
+                # Buscar el agente por ID (si aplica)
+                agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
+                # Buscar la comuna por nombre (si aplica)
+                comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
+
+                # Crear la propiedad
+                Property.objects.create(
+                    title=row['titulo'],
+                    tipo_propiedad=row['tipo_propiedad'],
+                    descripcion=row['descripcion'],
+                    direccion=row['direccion'],
+                    precio_venta=row['precio_venta'] if not pd.isna(row['precio_venta']) else None,
+                    precio_renta=row['precio_renta'] if not pd.isna(row['precio_renta']) else None,
+                    moneda=row['moneda'],
+                    habitaciones=row['habitaciones'],
+                    baños=row['baños'],
+                    superficie_total=row['superficie_total'] if not pd.isna(row['superficie_total']) else None,
+                    superficie_cubierta=row['superficie_cubierta'] if not pd.isna(row['superficie_cubierta']) else None,
+                    gastos_comunes=row['gastos_comunes'] if not pd.isna(row['gastos_comunes']) else None,
+                    contribuciones=row['contribuciones'] if not pd.isna(row['contribuciones']) else None,
+                    expensas=row['expensas'] if not pd.isna(row['expensas']) else None,
+                    latitud=row['latitud'] if not pd.isna(row['latitud']) else None,
+                    longitud=row['longitud'] if not pd.isna(row['longitud']) else None,
+                    agent=agent,
+                    comuna=comuna,
+                    tipo_operacion=row['tipo_operacion']
+                )
+            except Exception as e:
+                return Response({"error": f"Error al crear la propiedad en la fila {index}: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
