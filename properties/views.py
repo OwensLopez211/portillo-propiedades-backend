@@ -215,25 +215,31 @@ def mercado_libre_callback(request):
 
 class MassPropertyUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos en la solicitud
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         # Verificar si hay un archivo CSV
         csv_file = request.FILES.get('csv')
         if not csv_file:
+            print("No se subió un archivo CSV")
             return Response({"error": "No se subió un archivo CSV"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Leer el archivo CSV
         try:
-            df = pd.read_csv(csv_file)
+            df = pd.read_csv(csv_file, delimiter=',')
+            print(f"Datos del CSV: {df.head()}")  # Verificar el contenido del archivo CSV
         except Exception as e:
+            print(f"Error al leer el archivo CSV: {str(e)}")
             return Response({"error": f"Error al leer el archivo CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Procesar cada fila del CSV
         for index, row in df.iterrows():
             try:
+                print(f"Procesando fila {index}: {row}")  # Verificar cada fila procesada
+
                 # Buscar el agente por ID (si aplica)
                 agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
+
                 # Buscar la comuna por nombre (si aplica)
                 comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
 
@@ -259,7 +265,10 @@ class MassPropertyUploadView(APIView):
                     comuna=comuna,
                     tipo_operacion=row['tipo_operacion']
                 )
+                print(f"Propiedad creada para la fila {index}")
             except Exception as e:
+                print(f"Error al crear la propiedad en la fila {index}: {str(e)}")
                 return Response({"error": f"Error al crear la propiedad en la fila {index}: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
+        print("Propiedades creadas exitosamente")
         return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
