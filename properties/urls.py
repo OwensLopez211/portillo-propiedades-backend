@@ -8,7 +8,8 @@ from .views import (
     PropertyListView,
     mercado_libre_callback,
     AgentViewSet,
-    MassPropertyUploadView
+    MassPropertyUploadView,
+    count_properties
 )
 
 # Configuración del router para los agentes
@@ -24,6 +25,7 @@ urlpatterns = [
     path('property-images/<int:pk>/', DeletePropertyImageView.as_view(), name='delete-property-image'),  # Eliminar imágenes
     path('notifications/callback/', mercado_libre_callback, name='mercado_libre_callback'),  # Callback de notificaciones de MercadoLibre
     path('upload-mass-properties/', MassPropertyUploadView.as_view(), name='upload_mass_properties'),
+    path('count/', count_properties, name='count_properties'),
 ]
 
 # Agregar las rutas del router (para agentes)

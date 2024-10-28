@@ -1,5 +1,6 @@
 from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -214,6 +215,7 @@ def mercado_libre_callback(request):
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 class MassPropertyUploadView(APIView):
+
     parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos en la solicitud
     permission_classes = [IsAuthenticated]
 
@@ -272,3 +274,8 @@ class MassPropertyUploadView(APIView):
 
         print("Propiedades creadas exitosamente")
         return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
+    
+@api_view(['GET'])
+def count_properties(request):
+    property_count = Property.objects.count()
+    return Response({'count': property_count})

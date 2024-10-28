@@ -1,8 +1,12 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from properties.models import Property
 from decouple import config
 import requests
 import json
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.conf import settings
 
 @csrf_exempt
 def get_token(request):
@@ -58,9 +62,6 @@ def unlink_mercadolibre(request):
     # Si el método HTTP no es POST, devuelve un error
     return JsonResponse({'error': 'Método no permitido'}, status=405)
 
-
-
-
 #no implementado aun
 def refresh_access_token(refresh_token):
     response = requests.post(
@@ -78,3 +79,88 @@ def refresh_access_token(refresh_token):
         return token_data  # Devolver los nuevos tokens (access_token y refresh_token)
     else:
         return None  # Manejar el error si es necesario
+
+@api_view(['GET'])
+def get_mercadolibre_items(request):
+    access_token = request.user.mercadolibre_access_token  # Asegúrate de obtener el token de acceso de MercadoLibre del usuario
+
+    # Obtén los datos del usuario en MercadoLibre
+    user_response = requests.get(
+        'https://api.mercadolibre.com/users/me',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+
+    if user_response.status_code != 200:
+        return Response({'error': 'Error al obtener los datos del usuario en MercadoLibre'}, status=400)
+
+    user_data = user_response.json()
+    user_id = user_data['id']
+
+    # Ahora obtén los ítems (publicaciones) del usuario
+    items_response = requests.get(
+        f'https://api.mercadolibre.com/users/{user_id}/items/search',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+
+    if items_response.status_code != 200:
+        return Response({'error': 'Error al obtener las publicaciones'}, status=400)
+
+    items_data = items_response.json()
+    return Response(items_data)
+
+@api_view(['GET'])
+def sync_mercadolibre_properties(request):
+    # Asegúrate de que el usuario tenga un token de acceso a MercadoLibre
+    access_token = request.user.mercadolibre_access_token
+
+    # Obtén el `user_id` de MercadoLibre
+    user_response = requests.get(
+        'https://api.mercadolibre.com/users/me',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+
+    if user_response.status_code != 200:
+        return Response({'error': 'Error al obtener los datos del usuario en MercadoLibre'}, status=400)
+
+    user_data = user_response.json()
+    user_id = user_data['id']  # Este es el ID del usuario en MercadoLibre
+
+    # Obtener las publicaciones del usuario en MercadoLibre
+    items_response = requests.get(
+        f'https://api.mercadolibre.com/users/{user_id}/items/search',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+
+    if items_response.status_code != 200:
+        return Response({'error': 'Error al obtener las publicaciones'}, status=400)
+
+    items_data = items_response.json()
+
+    # Recorre los resultados de las publicaciones
+    for item_id in items_data['results']:
+        # Para cada publicación, obtén más detalles
+        item_response = requests.get(
+            f'https://api.mercadolibre.com/items/{item_id}',
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
+
+        if item_response.status_code == 200:
+            item_data = item_response.json()
+
+            # Guarda o actualiza la propiedad en tu base de datos
+            Property.objects.update_or_create(
+                mercadolibre_id=item_data['id'],  # Asegúrate de tener este campo en tu modelo
+                defaults={
+                    'title': item_data['title'],
+                    'precio_venta': item_data.get('price', 0),
+                    'descripcion': item_data.get('description', {}).get('plain_text', ''),
+                    'direccion': item_data.get('location', {}).get('address_line', ''),
+                    'latitud': item_data.get('location', {}).get('latitude', None),
+                    'longitud': item_data.get('location', {}).get('longitude', None),
+                    'publicada': item_data.get('date_created'),
+                    'tipo_operacion': item_data.get('buying_mode'),  # Alquiler/venta (verifica si aplica)
+                    'created_by': request.user,  # Asigna la propiedad al usuario autenticado en tu plataforma
+                }
+            )
+
+    return Response({'message': 'Propiedades sincronizadas con éxito'})

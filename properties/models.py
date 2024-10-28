@@ -61,7 +61,7 @@ class Property(models.Model):
         ('lotes_de_cementerio', 'Lotes de Cementerio'),
     ]
 
-
+    mercadolibre_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
     comuna = models.ForeignKey(Comuna, on_delete=models.SET_NULL, null=True, blank=True)
 
