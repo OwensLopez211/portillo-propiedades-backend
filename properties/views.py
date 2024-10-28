@@ -215,7 +215,7 @@ def mercado_libre_callback(request):
 
 class MassPropertyUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos en la solicitud
-    permission_classes = [IsAdminUser]  # Solo los administradores pueden subir propiedades masivamente
+    permission_classes = [IsAuthenticated] 
 
     def post(self, request):
         # Verificar si hay un archivo CSV
