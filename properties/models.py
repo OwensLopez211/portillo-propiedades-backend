@@ -62,6 +62,7 @@ class Property(models.Model):
     ]
 
     mercadolibre_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    ubicacion_referencia = models.CharField(max_length=255, blank=True, null=True, help_text="Ubicación de referencia para la propiedad")
     region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
     comuna = models.ForeignKey(Comuna, on_delete=models.SET_NULL, null=True, blank=True)
 
