@@ -29,10 +29,6 @@ class AgentSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(obj.profile_image.url) if request else obj.profile_image.url
         return None  # Retornar None si no hay imagen de perfil
 
-    class Meta:
-        model = Property
-        fields = '__all__'  # Incluir todos los campos del modelo de propiedad
-
 class RegionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Region
@@ -50,3 +46,6 @@ class PropertySerializer(serializers.ModelSerializer):
     region = RegionSerializer(read_only=True)  # Incluir datos de la región
     comuna = ComunaSerializer(read_only=True)  # Incluir datos de la comuna
     
+    class Meta:
+        model = Property
+        fields = '__all__'  # Incluir todos los campos del modelo de propiedad
