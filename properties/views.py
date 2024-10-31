@@ -1,12 +1,12 @@
 from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
-from .models import Agent, Property, PropertyImage, Comuna
-from .serializers import PropertySerializer, AgentSerializer
+from .models import Agent, Property, PropertyImage,Region, Comuna
+from .serializers import PropertySerializer, AgentSerializer,RegionSerializer, ComunaSerializer
 import cloudinary.uploader
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -279,3 +279,15 @@ class MassPropertyUploadView(APIView):
 def count_properties(request):
     property_count = Property.objects.count()
     return Response({'count': property_count})
+
+class RegionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializer
+
+    # Endpoint para obtener comunas de una región específica
+    @action(detail=True, methods=['get'])
+    def comunas(self, request, pk=None):
+        region = self.get_object()
+        comunas = region.comunas.all()
+        serializer = ComunaSerializer(comunas, many=True)
+        return Response(serializer.data)

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, PropertyImage, Agent
+from .models import Property, PropertyImage, Agent, Region, Comuna
 
 class PropertyImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -37,3 +37,12 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = '__all__'  # Incluir todos los campos del modelo de propiedad
 
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = ['id', 'nombre']
+
+class ComunaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comuna
+        fields = ['id', 'nombre']

@@ -9,12 +9,14 @@ from .views import (
     mercado_libre_callback,
     AgentViewSet,
     MassPropertyUploadView,
-    count_properties
+    count_properties,
+    RegionViewSet  # Agrega el RegionViewSet
 )
 
 # Configuración del router para los agentes
 router = DefaultRouter()
 router.register(r'agents', AgentViewSet)
+router.register(r'regions', RegionViewSet)  # Registra el RegionViewSet
 
 # Definición de las URL patterns
 urlpatterns = [
@@ -28,5 +30,5 @@ urlpatterns = [
     path('count/', count_properties, name='count_properties'),
 ]
 
-# Agregar las rutas del router (para agentes)
+# Agregar las rutas del router (para agentes y regiones)
 urlpatterns += router.urls
