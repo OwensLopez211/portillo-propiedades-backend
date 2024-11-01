@@ -40,12 +40,11 @@ class ComunaSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre']
 
 class PropertySerializer(serializers.ModelSerializer):
-    
-    images = PropertyImageSerializer(many=True, read_only=True)  # Para listar las imágenes relacionadas
-    agent = AgentSerializer(read_only=True)  # Permitir enviar el ID del agente
-    region = RegionSerializer(read_only=True)  # Incluir datos de la región
-    comuna = ComunaSerializer(read_only=True)  # Incluir datos de la comuna
-    
+    images = PropertyImageSerializer(many=True, read_only=True)
+    agent = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all())  # Permitir el ID del agente
+    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())  # Permitir el ID de la región
+    comuna = serializers.PrimaryKeyRelatedField(queryset=Comuna.objects.all())  # Permitir el ID de la comuna
+
     class Meta:
         model = Property
         fields = '__all__'  # Incluir todos los campos del modelo de propiedad
