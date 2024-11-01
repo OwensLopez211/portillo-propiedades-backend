@@ -41,10 +41,17 @@ class ComunaSerializer(serializers.ModelSerializer):
 
 class PropertySerializer(serializers.ModelSerializer):
     images = PropertyImageSerializer(many=True, read_only=True)
-    agent = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all())  # Permitir el ID del agente
-    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())  # Permitir el ID de la región
-    comuna = serializers.PrimaryKeyRelatedField(queryset=Comuna.objects.all())  # Permitir el ID de la comuna
+    
+    # Campos adicionales para mostrar datos anidados
+    agent_detail = AgentSerializer(source='agent', read_only=True)
+    region_detail = RegionSerializer(source='region', read_only=True)
+    comuna_detail = ComunaSerializer(source='comuna', read_only=True)
+
+    # Campos de solo ID para creación y actualización
+    agent = serializers.PrimaryKeyRelatedField(queryset=Agent.objects.all())
+    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+    comuna = serializers.PrimaryKeyRelatedField(queryset=Comuna.objects.all())
 
     class Meta:
         model = Property
-        fields = '__all__'  # Incluir todos los campos del modelo de propiedad
+        fields = '__all__'
