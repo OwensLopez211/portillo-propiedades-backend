@@ -242,7 +242,8 @@ class MassPropertyUploadView(APIView):
                 # Buscar el agente por ID (si aplica)
                 agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
 
-                # Buscar la comuna por nombre (si aplica)
+                # Buscar la región y la comuna por nombre (si aplica)
+                region = Region.objects.get(nombre=row['region']) if 'region' in row and not pd.isna(row['region']) else None
                 comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
 
                 # Crear la propiedad
@@ -251,6 +252,9 @@ class MassPropertyUploadView(APIView):
                     tipo_propiedad=row['tipo_propiedad'],
                     descripcion=row['descripcion'],
                     direccion=row['direccion'],
+                    region=region,
+                    comuna=comuna,
+                    ubicacion_referencia=row['ubicacion_referencia'] if 'ubicacion_referencia' in row and not pd.isna(row['ubicacion_referencia']) else None,
                     precio_venta=row['precio_venta'] if not pd.isna(row['precio_venta']) else None,
                     precio_renta=row['precio_renta'] if not pd.isna(row['precio_renta']) else None,
                     moneda=row['moneda'],
@@ -264,7 +268,6 @@ class MassPropertyUploadView(APIView):
                     latitud=row['latitud'] if not pd.isna(row['latitud']) else None,
                     longitud=row['longitud'] if not pd.isna(row['longitud']) else None,
                     agent=agent,
-                    comuna=comuna,
                     tipo_operacion=row['tipo_operacion']
                 )
                 print(f"Propiedad creada para la fila {index}")
