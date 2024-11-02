@@ -1,9 +1,8 @@
 # contact/urls.py
-from django.urls import path, include
-from .views import contact_view
+from django.urls import path
+from .views import send_email
 
 
 urlpatterns = [
-    path('', contact_view, name='contact'),
     path('send-email/', send_email, name='send_email'),
 ]

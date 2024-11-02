@@ -1,27 +1,20 @@
 from django.core.mail import send_mail
-from django.shortcuts import render, redirect
-from .forms import ContactForm
-from django.contrib import messages
+from rest_framework.decorators import api_view
+from rest_framework import status
+from django.http import JsonResponse
+from django.conf import settings
 
-def contact_view(request):
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            name = form.cleaned_data['name']
-            email = form.cleaned_data['email']
-            message = form.cleaned_data['message']
-            
-            # Envía el correo electrónico
-            send_mail(
-                f'Mensaje de {name}',  # Asunto del correo
-                message,  # Cuerpo del correo
-                email,  # De
-                ['propiedadesportilla0@gmail.com'],  # Para
-            )
 
-            messages.success(request, '¡Gracias por contactarnos! Te responderemos pronto.')
-            return redirect('contact')
-    else:
-        form = ContactForm()
-
-    return render(request, 'contact/contact.html', {'form': form})
+@api_view(['POST'])
+def send_email(request):
+    data = request.data
+    try:
+        send_mail(
+            subject=data.get('subject', 'Consulta de Usuario'),
+            message=f"Nombre: {data['name']}\nTeléfono: {data['phone']}\n\n{data['message']}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.TARGET_EMAIL],
+        )
+        return JsonResponse({'message': 'Correo enviado exitosamente'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
