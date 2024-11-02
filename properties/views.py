@@ -236,7 +236,7 @@ class MassPropertyUploadView(APIView):
         # Leer el archivo Excel
         try:
             # Usamos pd.read_excel en lugar de read_csv para manejar archivos .xlsx
-            df = pd.read_excel(excel_file, engine='openpyxl')  # Usar engine='openpyxl' para archivos xlsx
+            df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')  # Usar engine='openpyxl' para archivos xlsx
             print(f"Datos del Excel: {df.head()}")  # Verificar el contenido del archivo Excel
         except Exception as e:
             print(f"Error al leer el archivo Excel: {str(e)}")
