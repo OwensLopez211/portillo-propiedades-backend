@@ -243,7 +243,7 @@ class MassPropertyUploadView(APIView):
                 agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
 
                 # Buscar la región y la comuna por nombre (si aplica)
-                region = Region.objects.get(nombre=row['region']) if 'region' in row and not pd.isna(row['region']) else None
+                region = Region.objects.get(id=row['region_id']) if 'region_id' in row and not pd.isna(row['region_id']) else None
                 comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
 
                 # Crear la propiedad
