@@ -214,27 +214,35 @@ def mercado_libre_callback(request):
     logger.warning(f'Método HTTP no permitido: {request.method}')
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-class MassPropertyUploadView(APIView):
+import pandas as pd
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.db import transaction
+from .models import Agent, Property, Region, Comuna
 
-    parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos en la solicitud
+class MassPropertyUploadView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Verificar si hay un archivo CSV
-        csv_file = request.FILES.get('csv')
-        if not csv_file:
-            print("No se subió un archivo CSV")
-            return Response({"error": "No se subió un archivo CSV"}, status=status.HTTP_400_BAD_REQUEST)
+        # Verificar si hay un archivo Excel
+        excel_file = request.FILES.get('excel')
+        if not excel_file:
+            print("No se subió un archivo Excel")
+            return Response({"error": "No se subió un archivo Excel"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Leer el archivo CSV
+        # Leer el archivo Excel
         try:
-            df = pd.read_csv(csv_file, delimiter=',')
-            print(f"Datos del CSV: {df.head()}")  # Verificar el contenido del archivo CSV
+            # Usamos pd.read_excel en lugar de read_csv para manejar archivos .xlsx
+            df = pd.read_excel(excel_file, engine='openpyxl')  # Usar engine='openpyxl' para archivos xlsx
+            print(f"Datos del Excel: {df.head()}")  # Verificar el contenido del archivo Excel
         except Exception as e:
-            print(f"Error al leer el archivo CSV: {str(e)}")
-            return Response({"error": f"Error al leer el archivo CSV: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Error al leer el archivo Excel: {str(e)}")
+            return Response({"error": f"Error al leer el archivo Excel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Procesar cada fila del CSV
+        # Procesar cada fila del Excel
         for index, row in df.iterrows():
             try:
                 print(f"Procesando fila {index}: {row}")  # Verificar cada fila procesada
@@ -242,13 +250,13 @@ class MassPropertyUploadView(APIView):
                 # Buscar el agente por ID (si aplica)
                 agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
 
-                # Buscar la región y la comuna por nombre (si aplica)
+                # Buscar la región y la comuna por ID y nombre, respectivamente
                 region = Region.objects.get(id=row['region_id']) if 'region_id' in row and not pd.isna(row['region_id']) else None
                 comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
 
                 # Crear la propiedad
                 Property.objects.create(
-                    title=row['titulo'],
+                    titulo=row['titulo'],
                     tipo_propiedad=row['tipo_propiedad'],
                     descripcion=row['descripcion'],
                     direccion=row['direccion'],
@@ -277,6 +285,7 @@ class MassPropertyUploadView(APIView):
 
         print("Propiedades creadas exitosamente")
         return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
+
     
 @api_view(['GET'])
 def count_properties(request):
