@@ -229,6 +229,7 @@ class MassPropertyUploadView(APIView):
         # Leer el archivo Excel
         try:
             df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
+            print("Columnas leídas desde el archivo Excel:", df.columns.tolist())  # Imprime los nombres de las columnas
             print(f"Datos del Excel: {df.head()}")
         except Exception as e:
             return Response({"error": f"Error al leer el archivo Excel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
@@ -282,14 +283,13 @@ class MassPropertyUploadView(APIView):
                     tipo_operacion=row['tipo_operacion']
                 )
                 print(f"Propiedad creada para la fila {index}")
+            except KeyError as e:
+                return Response({"error": f"Campo faltante o incorrecto: {str(e)} en la fila {index}"}, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({"error": f"Error al crear la propiedad en la fila {index}: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         print("Propiedades creadas exitosamente")
         return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
-
-
-
     
 @api_view(['GET'])
 def count_properties(request):
