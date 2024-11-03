@@ -214,50 +214,52 @@ def mercado_libre_callback(request):
     logger.warning(f'Método HTTP no permitido: {request.method}')
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-import pandas as pd
-from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.db import transaction
-from .models import Agent, Property, Region, Comuna
-
 class MassPropertyUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         logger.info("Solicitud recibida para subir propiedades masivamente.")
+        
         # Verificar si hay un archivo Excel
         excel_file = request.FILES.get('excel')
         if not excel_file:
-            print("No se subió un archivo Excel")
             return Response({"error": "No se subió un archivo Excel"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Leer el archivo Excel
         try:
-            # Usamos pd.read_excel en lugar de read_csv para manejar archivos .xlsx
-            df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')  # Usar engine='openpyxl' para archivos xlsx
-            print(f"Datos del Excel: {df.head()}")  # Verificar el contenido del archivo Excel
+            df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
+            print(f"Datos del Excel: {df.head()}")
         except Exception as e:
-            print(f"Error al leer el archivo Excel: {str(e)}")
             return Response({"error": f"Error al leer el archivo Excel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validar columnas esperadas
+        columnas_esperadas = [
+            'title', 'tipo_propiedad', 'descripcion', 'direccion', 'region_id', 'comuna', 
+            'ubicacion_referencia', 'precio_venta', 'precio_renta', 'moneda', 
+            'habitaciones', 'baños', 'superficie_total', 'superficie_cubierta', 
+            'gastos_comunes', 'contribuciones', 'expensas', 'latitud', 'longitud', 
+            'agente_id', 'tipo_operacion'
+        ]
+        columnas_faltantes = [col for col in columnas_esperadas if col not in df.columns]
+        if columnas_faltantes:
+            return Response({"error": f"Columnas faltantes en el archivo: {', '.join(columnas_faltantes)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Procesar cada fila del Excel
         for index, row in df.iterrows():
             try:
-                print(f"Procesando fila {index}: {row}")  # Verificar cada fila procesada
+                print(f"Procesando fila {index}: {row}")
 
-                # Buscar el agente por ID (si aplica)
+                # Buscar el agente por ID
                 agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
 
-                # Buscar la región y la comuna por ID y nombre, respectivamente
+                # Buscar la región y la comuna por ID y nombre
                 region = Region.objects.get(id=row['region_id']) if 'region_id' in row and not pd.isna(row['region_id']) else None
                 comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
 
-                # Crear la propiedad
+                # Crear la propiedad con nombres de campos actualizados
                 Property.objects.create(
-                    titulo=row['titulo'],
+                    title=row['title'],
                     tipo_propiedad=row['tipo_propiedad'],
                     descripcion=row['descripcion'],
                     direccion=row['direccion'],
@@ -281,11 +283,12 @@ class MassPropertyUploadView(APIView):
                 )
                 print(f"Propiedad creada para la fila {index}")
             except Exception as e:
-                print(f"Error al crear la propiedad en la fila {index}: {str(e)}")
                 return Response({"error": f"Error al crear la propiedad en la fila {index}: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
         print("Propiedades creadas exitosamente")
         return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
+
+
 
     
 @api_view(['GET'])
