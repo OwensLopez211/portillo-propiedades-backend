@@ -227,6 +227,7 @@ class MassPropertyUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        logger.info("Solicitud recibida para subir propiedades masivamente.")
         # Verificar si hay un archivo Excel
         excel_file = request.FILES.get('excel')
         if not excel_file:
