@@ -98,7 +98,9 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://portillo-propiedades-frontend.vercel.app",
-    "http://localhost:3000",
+    "http://localhost:3000","http://newlandpropiedades.cl",
+    "https://newlandpropiedades.cl"
+    
 ]
 
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
@@ -174,13 +176,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'corredorapropiedadesdb',
-        'USER': 'corredormaster',
-        'PASSWORD': 'RH6iAvBDkd1Bz9UZSX3OyJ98K5NaNrJq',
-        'HOST': 'dpg-cs2829e8ii6s739da6sg-a.virginia-postgres.render.com',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
+
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 
