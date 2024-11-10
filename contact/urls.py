@@ -1,8 +1,8 @@
 # contact/urls.py
 from django.urls import path
-from .views import send_email
+from .views import enviar_correo_api
 
 
 urlpatterns = [
-    path('send-email/', send_email, name='send_email'),
+    path('enviar-correo/', enviar_correo_api, name='enviar_correo_api'),
 ]
