@@ -8,6 +8,8 @@ from django.conf import settings
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def enviar_correo_api(request):
+    print("Contenido de request.data:", request.data)  # Agrega esta línea
+    
     data = request.data
     nombre = data.get('nombre')
     email = data.get('email')
