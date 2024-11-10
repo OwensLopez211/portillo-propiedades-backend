@@ -9,11 +9,13 @@ from django.conf import settings
 @permission_classes([AllowAny])
 def enviar_correo_api(request):
     print("Contenido de request.data:", request.data)  # Agrega esta línea
-    
+
     data = request.data
     nombre = data.get('nombre')
     email = data.get('email')
     mensaje = data.get('mensaje')
+    asunto = data.get('asunto', 'Nuevo mensaje')
+
 
     if not nombre or not email or not mensaje:
         return JsonResponse({'error': 'Todos los campos son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
