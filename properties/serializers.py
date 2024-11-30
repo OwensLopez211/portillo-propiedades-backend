@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, PropertyImage, Agent, Region, Comuna
+from .models import Property, PropertyImage, Agent, Region, Comuna, UFValue
 
 class PropertyImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
@@ -57,3 +57,29 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = '__all__'
+
+    def get_precio_venta_uf(self, obj):
+        """Convierte el precio de venta de CLP a UF si aplica."""
+        try:
+            if obj.moneda_precio == 'CLP' and obj.precio_venta:
+                # Obtén el valor actual de la UF desde tu modelo UFValue
+                uf_value = UFValue.objects.first()  # Ajusta según tu lógica
+                if uf_value:
+                    return round(obj.precio_venta / uf_value.value, 2)
+            return obj.precio_venta  # Devuelve el valor original si ya está en UF
+        except Exception as e:
+            # Maneja cualquier error inesperado
+            return None
+
+    def get_precio_renta_uf(self, obj):
+        """Convierte el precio de renta de CLP a UF si aplica."""
+        try:
+            if obj.moneda_precio == 'CLP' and obj.precio_renta:
+                # Obtén el valor actual de la UF desde tu modelo UFValue
+                uf_value = UFValue.objects.first()  # Ajusta según tu lógica
+                if uf_value:
+                    return round(obj.precio_renta / uf_value.value, 2)
+            return obj.precio_renta  # Devuelve el valor original si ya está en UF
+        except Exception as e:
+            # Maneja cualquier error inesperado
+            return None
