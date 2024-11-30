@@ -1,4 +1,5 @@
-from django.core.mail import send_mail
+from django.core.mail import send_mail, BadHeaderError
+from smtplib import SMTPException
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
@@ -44,9 +45,20 @@ def enviar_correo_api(request):
         logger.info("Email sent successfully")
         return JsonResponse({'mensaje': 'Correo enviado exitosamente'}, status=status.HTTP_200_OK)
     
-    except Exception as e:
-        logger.error(f"Error sending email: {str(e)}", exc_info=True)
+    except BadHeaderError:
+        logger.error("Invalid header found")
         return JsonResponse({
-            'error': 'No se pudo enviar el correo',
+            'error': 'Se detectó un encabezado inválido en el correo'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except SMTPException as e:
+        logger.error(f"SMTP error: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'error': 'Hubo un problema al enviar el correo mediante SMTP',
+            'detalles': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception as e:
+        logger.error(f"General error: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'error': 'Ocurrió un error inesperado',
             'detalles': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

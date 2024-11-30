@@ -11,3 +11,19 @@ INFO 2024-11-30 18:59:24,274 autoreload 22556 21588 C:\Users\Owens\Desktop\Codig
 INFO 2024-11-30 18:59:25,910 autoreload 22180 7180 Watching for file changes with StatReloader
 INFO 2024-11-30 19:00:12,012 autoreload 22180 7180 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\portillo_propiedades_backend\settings.py changed, reloading.
 INFO 2024-11-30 19:00:13,496 autoreload 23516 6124 Watching for file changes with StatReloader
+INFO 2024-11-30 19:19:24,374 autoreload 19696 20340 Watching for file changes with StatReloader
+INFO 2024-11-30 19:19:31,641 views 19696 23548 Received email request
+DEBUG 2024-11-30 19:19:31,642 views 19696 23548 Request data: <QueryDict: {'nombre': ['owens'], 'email': ['owens@example.com'], 'mensaje': ['prueba de mensaje'], 'asunto': ['Postulación a trabajar con Newland Propiedades']}>
+INFO 2024-11-30 19:19:31,642 views 19696 23548 Attempting to send email to Contacto@newlandpropiedades.cl
+INFO 2024-11-30 19:19:35,039 views 19696 23548 Email sent successfully
+INFO 2024-11-30 19:19:35,041 basehttp 19696 23548 "POST /api/contact/enviar-correo/ HTTP/1.1" 200 42
+INFO 2024-11-30 20:41:55,634 autoreload 20264 12144 Watching for file changes with StatReloader
+INFO 2024-11-30 20:44:04,235 autoreload 21228 23296 Watching for file changes with StatReloader
+WARNING 2024-11-30 20:44:50,251 log 21228 8268 Not Found: /contact/enviar-correo/
+WARNING 2024-11-30 20:44:50,251 log 21228 8268 Not Found: /contact/enviar-correo/
+WARNING 2024-11-30 20:44:50,252 basehttp 21228 8268 "POST /contact/enviar-correo/ HTTP/1.1" 404 3325
+INFO 2024-11-30 20:45:00,477 views 21228 8268 Received email request
+DEBUG 2024-11-30 20:45:00,477 views 21228 8268 Request data: {'nombre': 'Juan Pérez', 'email': 'juan.perez@example.com', 'mensaje': 'Estoy interesado en más información sobre su servicio.', 'asunto': 'Consulta desde formulario'}
+INFO 2024-11-30 20:45:00,477 views 21228 8268 Attempting to send email to Contacto@newlandpropiedades.cl
+INFO 2024-11-30 20:45:04,220 views 21228 8268 Email sent successfully
+INFO 2024-11-30 20:45:04,225 basehttp 21228 8268 "POST /api/contact/enviar-correo/ HTTP/1.1" 200 42
