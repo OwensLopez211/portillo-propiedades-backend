@@ -108,8 +108,8 @@ class Property(models.Model):
     direccion = models.CharField(max_length=255)
     
     # Campos de precio
-    precio_venta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    precio_renta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    precio_venta = models.IntegerField( null=True, blank=True)
+    precio_renta = models.IntegerField( null=True, blank=True)
     valor_uf_al_momento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     # Información de la propiedad
