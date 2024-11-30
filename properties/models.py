@@ -1,6 +1,10 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from decimal import Decimal
+import requests
+from django.http import JsonResponse
+from datetime import datetime
 import cloudinary.uploader
 from cloudinary.models import CloudinaryField  
 
@@ -23,6 +27,17 @@ class Region(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+
+class UFValue(models.Model):
+    date = models.DateField(unique=True)
+    value = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"UF {self.date}: ${self.value}"
 
 # Modelo para Comuna
 class Comuna(models.Model):
@@ -42,6 +57,7 @@ class Property(models.Model):
         (ARRIENDO, 'Arriendo'),
         (ARRIENDO_TEMPORAL, 'Arriendo Temporal')
     ]
+    
 
     # Definir los tipos de propiedad
     PROPERTY_TYPE_CHOICES = [
@@ -60,6 +76,20 @@ class Property(models.Model):
         ('loteo', 'Loteos'),
         ('lotes_de_cementerio', 'Lotes de Cementerio'),
     ]
+    MONEDA_CLP = 'CLP'
+    MONEDA_UF = 'UF'
+    MONEDA_CHOICES = [
+        (MONEDA_CLP, 'CLP'),
+        (MONEDA_UF, 'UF'),
+    ]
+
+    moneda_precio = models.CharField(
+        max_length=3,
+        choices=MONEDA_CHOICES,
+        default=MONEDA_CLP,
+        help_text="Selecciona si el precio principal está en CLP o UF"
+    )   
+
 
     mercadolibre_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
     ubicacion_referencia = models.CharField(max_length=255, blank=True, null=True, help_text="Ubicación de referencia para la propiedad")
@@ -74,7 +104,7 @@ class Property(models.Model):
     # Campos de precio
     precio_venta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     precio_renta = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    moneda = models.CharField(max_length=3, default='CLP')  # Campo adicional para moneda (ejemplo: CLP, USD)
+    valor_uf_al_momento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     # Información de la propiedad
     habitaciones = models.IntegerField()
@@ -101,8 +131,51 @@ class Property(models.Model):
         default=VENTA,
     )
 
-    def __str__(self):
-        return self.title
+    @staticmethod
+    def get_uf_value():
+        """Obtiene el valor actual de la UF desde mindicador.cl o la base de datos."""
+        try:
+            # Primero intenta obtener el valor más reciente en la base de datos
+            uf = UFValue.objects.filter(date=timezone.now().date()).first()
+            if uf:
+                return uf.value
+
+            # Si no existe en la base de datos, consulta la API
+            response = requests.get('https://mindicador.cl/api/uf')
+            if response.status_code == 200:
+                data = response.json()
+                # La API devuelve los valores ordenados por fecha, toma el más reciente
+                latest_uf = data['serie'][0]
+                uf_value = Decimal(str(latest_uf['valor']))
+
+                # Convertir la fecha desde el formato de la API
+                fecha = datetime.strptime(latest_uf['fecha'].split('T')[0], '%Y-%m-%d').date()
+
+                # Guardar el valor en la base de datos si no existe
+                UFValue.objects.get_or_create(date=fecha, defaults={'value': uf_value})
+
+                return uf_value
+
+            # Si falla la API, devuelve un valor por defecto
+            return Decimal('35000')  # Valor fijo por si no se puede obtener
+        except Exception as e:
+            # Registrar el error para depuración
+            print(f"Error al obtener el valor de la UF: {e}")
+            return Decimal('35000')  # Valor por defecto en caso de error
+
+    @property
+    def precio_venta_alternativo(self):
+        """Calcula el precio alternativo."""
+        if self.precio_venta:
+            if self.moneda_precio == self.MONEDA_UF:
+                return round(self.precio_venta * self.get_uf_value(), 2)
+            elif self.moneda_precio == self.MONEDA_CLP:
+                return round(self.precio_venta / self.get_uf_value(), 2)
+        return None
+
+    def save(self, *args, **kwargs):
+        self.valor_uf_al_momento = self.get_uf_value()
+        super().save(*args, **kwargs)
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, related_name='images', on_delete=models.CASCADE)

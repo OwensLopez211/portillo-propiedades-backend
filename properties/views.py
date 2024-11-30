@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.db.models import Q
-from .models import Agent, Property, PropertyImage,Region, Comuna
+from .models import Agent, Property, PropertyImage,Region, Comuna, UFValue
 from .serializers import PropertySerializer, AgentSerializer,RegionSerializer, ComunaSerializer
 import cloudinary.uploader
 from django.http import JsonResponse
@@ -307,3 +307,26 @@ class RegionViewSet(viewsets.ReadOnlyModelViewSet):
         comunas = region.comunas.all()
         serializer = ComunaSerializer(comunas, many=True)
         return Response(serializer.data)
+
+@api_view(['GET'])
+def get_latest_uf(request):
+    try:
+        latest_uf = UFValue.objects.latest('date')
+        return Response({
+            'value': float(latest_uf.value),
+            'date': latest_uf.date,
+            'formatted_value': f"$ {'{:,.2f}'.format(latest_uf.value)}"
+        })
+    except UFValue.DoesNotExist:
+        return Response({
+            'error': 'No hay valor UF disponible'
+        }, status=404)
+    
+def obtener_uf_actual(request):
+        """Endpoint para obtener el valor actual de la UF."""
+        try:
+            # Usar la lógica existente del modelo
+            uf_value = Property.get_uf_value()
+            return JsonResponse({'valor_uf': float(uf_value)}, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)

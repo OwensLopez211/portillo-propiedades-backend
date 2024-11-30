@@ -40,6 +40,8 @@ class ComunaSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre']
 
 class PropertySerializer(serializers.ModelSerializer):
+    precio_venta_uf = serializers.SerializerMethodField()
+    precio_renta_uf = serializers.SerializerMethodField()
     images = PropertyImageSerializer(many=True, read_only=True)
     
     # Campos adicionales para mostrar datos anidados

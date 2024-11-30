@@ -10,7 +10,9 @@ from .views import (
     AgentViewSet,
     MassPropertyUploadView,
     count_properties,
-    RegionViewSet  # Agrega el RegionViewSet
+    RegionViewSet,  # Agrega el RegionViewSet
+    get_latest_uf,
+    obtener_uf_actual
 )
 
 # Configuración del router para los agentes
@@ -28,6 +30,8 @@ urlpatterns = [
     path('notifications/callback/', mercado_libre_callback, name='mercado_libre_callback'),  # Callback de notificaciones de MercadoLibre
     path('upload-mass-properties/', MassPropertyUploadView.as_view(), name='upload_mass_properties'),
     path('count/', count_properties, name='count_properties'),
+    path('latest-uf/', get_latest_uf, name='get-latest-uf'),
+    path('uf/', obtener_uf_actual, name='obtener_uf_actual'),
 ]
 
 # Agregar las rutas del router (para agentes y regiones)
