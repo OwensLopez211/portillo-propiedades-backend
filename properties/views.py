@@ -138,8 +138,20 @@ class PropertyListView(APIView):
 
     def get(self, request):
         # Obtener solo las propiedades publicadas para el sitio web público
-        properties = Property.objects.filter(is_published=True)
+        properties = Property.objects.all()
 
+        # Filtros opcionales para búsqueda y ordenamiento
+        search = request.GET.get('search')
+        if search:
+            properties = properties.filter(
+                Q(title__icontains=search) | Q(tipo_propiedad__icontains=search)
+            )
+
+        # Filtrar por publicación si es necesario
+        is_published = request.GET.get('is_published')
+        if is_published is not None:
+            properties = properties.filter(is_published=is_published.lower() == 'true')
+            
         # Aplicar los filtros existentes...
         operation = request.GET.get('operation')
         if operation:
