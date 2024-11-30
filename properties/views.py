@@ -128,7 +128,7 @@ class FeaturedPropertiesAPIView(APIView):
     permission_classes = [AllowAny]  # Acceso público
 
     def get(self, request):
-        featured_properties = Property.objects.filter(is_featured=True)
+        featured_properties = Property.objects.filter(is_featured=True, is_published=True)
         serializer = PropertySerializer(featured_properties, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -137,7 +137,13 @@ class PropertyListView(APIView):
     permission_classes = [AllowAny]  # Acceso público
 
     def get(self, request):
-        properties = Property.objects.all()
+        # Obtener solo las propiedades publicadas para el sitio web público
+        properties = Property.objects.filter(is_published=True)
+
+        # Aplicar los filtros existentes...
+        operation = request.GET.get('operation')
+        if operation:
+            properties = properties.filter(tipo_operacion=operation)
 
         # Filtrar por operación (venta/arriendo)
         operation = request.GET.get('operation')

@@ -88,6 +88,12 @@ class Property(models.Model):
         choices=MONEDA_CHOICES,
         default=MONEDA_CLP,
         help_text="Selecciona si el precio principal está en CLP o UF"
+    )
+    
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name="Publicada",
+        help_text="Indica si la propiedad está visible en el sitio web"
     )   
 
 
