@@ -242,6 +242,67 @@ class MassPropertyUploadView(APIView):
         value_str = str(value).strip().upper()
         return value_str in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
 
+    def row_to_dict(self, row):
+        """Convierte una fila del DataFrame a un diccionario con los valores procesados"""
+        return {
+            'title': str(row['title']),
+            'tipo_propiedad': str(row['tipo_propiedad']),
+            'descripcion': str(row['descripcion']) if not pd.isna(row['descripcion']) else "",
+            'direccion': str(row['direccion']),
+            'region_id': int(row['region_id']) if not pd.isna(row['region_id']) else None,
+            'comuna': str(row['comuna']) if not pd.isna(row['comuna']) else None,
+            'ubicacion_referencia': str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
+            'precio_venta': int(float(row['precio_venta'])) if not pd.isna(row['precio_venta']) else None,
+            'precio_renta': int(float(row['precio_renta'])) if not pd.isna(row['precio_renta']) else None,
+            'moneda_precio': 'UF' if str(row['moneda']).upper().strip() == 'UF' else 'CLP',
+            'habitaciones': int(row['habitaciones']) if not pd.isna(row['habitaciones']) else 0,
+            'baños': int(row['baños']) if not pd.isna(row['baños']) else 0,
+            'superficie_total': float(row['superficie_total']) if not pd.isna(row['superficie_total']) else None,
+            'superficie_cubierta': float(row['superficie_cubierta']) if not pd.isna(row['superficie_cubierta']) else None,
+            'gastos_comunes': float(row['gastos_comunes']) if not pd.isna(row['gastos_comunes']) else None,
+            'contribuciones': float(row['contribuciones']) if not pd.isna(row['contribuciones']) else None,
+            'expensas': float(row['expensas']) if not pd.isna(row['expensas']) else None,
+            'latitud': float(row['latitud']) if not pd.isna(row['latitud']) else None,
+            'longitud': float(row['longitud']) if not pd.isna(row['longitud']) else None,
+            'agent_id': int(row['agente_id']) if not pd.isna(row['agente_id']) else None,
+            'tipo_operacion': str(row['tipo_operacion']),
+            'is_published': self.get_is_published_value(row.get('publicar', True))
+        }
+
+    def properties_are_equal(self, property_obj, new_data):
+        """Compara si una propiedad existente es igual a los nuevos datos"""
+        for key, value in new_data.items():
+            if key in ['region_id', 'agent_id']:
+                # Comparar IDs de relaciones
+                current_value = getattr(getattr(property_obj, key.replace('_id', '')), 'id', None)
+            elif key == 'comuna':
+                # Comparar nombre de comuna
+                current_value = getattr(getattr(property_obj, 'comuna'), 'nombre', None)
+            else:
+                current_value = getattr(property_obj, key, None)
+            
+            if current_value != value:
+                return False
+        return True
+
+    def update_property(self, property_obj, new_data):
+        """Actualiza una propiedad existente con nuevos datos"""
+        # Manejar relaciones especiales
+        if new_data['region_id']:
+            property_obj.region = Region.objects.get(id=new_data['region_id'])
+        if new_data['agent_id']:
+            property_obj.agent = Agent.objects.get(id=new_data['agent_id'])
+        if new_data['comuna']:
+            property_obj.comuna = Comuna.objects.get(nombre=new_data['comuna'])
+
+        # Actualizar campos directos
+        for key, value in new_data.items():
+            if key not in ['region_id', 'agent_id', 'comuna']:
+                setattr(property_obj, key, value)
+        
+        property_obj.valor_uf_al_momento = Property.get_uf_value()
+        property_obj.save()
+
     def post(self, request):
         logger.info("Solicitud recibida para subir propiedades masivamente.")
         
@@ -262,10 +323,8 @@ class MassPropertyUploadView(APIView):
             
             propiedades_creadas = 0
             propiedades_existentes = 0
+            propiedades_modificadas = 0
             errores = []
-
-            # Obtener todos los códigos existentes
-            codigos_existentes = set(Property.objects.values_list('codigo', flat=True))
 
             for index, row in df.iterrows():
                 try:
@@ -273,44 +332,58 @@ class MassPropertyUploadView(APIView):
                         continue
 
                     codigo = str(row['codigo']).strip()
-
-                    # Verificar si la propiedad ya existe
-                    if codigo in codigos_existentes:
-                        print(f"Propiedad {codigo} ya existe, ignorando...")
-                        propiedades_existentes += 1
-                        continue
-
                     is_published = self.get_is_published_value(row.get('publicar', True))
                     valor_uf = Property.get_uf_value()
 
-                    Property.objects.create(
-                        codigo=codigo,
-                        title=str(row['title']),
-                        tipo_propiedad=str(row['tipo_propiedad']),
-                        descripcion=str(row['descripcion']) if not pd.isna(row['descripcion']) else "",
-                        direccion=str(row['direccion']),
-                        region=Region.objects.get(id=int(row['region_id'])) if not pd.isna(row['region_id']) else None,
-                        comuna=Comuna.objects.get(nombre=str(row['comuna'])) if not pd.isna(row['comuna']) else None,
-                        ubicacion_referencia=str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
-                        precio_venta=int(float(row['precio_venta'])) if not pd.isna(row['precio_venta']) else None,
-                        precio_renta=int(float(row['precio_renta'])) if not pd.isna(row['precio_renta']) else None,
-                        moneda_precio='UF' if str(row['moneda']).upper().strip() == 'UF' else 'CLP',
-                        valor_uf_al_momento=valor_uf,
-                        habitaciones=int(row['habitaciones']) if not pd.isna(row['habitaciones']) else 0,
-                        baños=int(row['baños']) if not pd.isna(row['baños']) else 0,
-                        superficie_total=float(row['superficie_total']) if not pd.isna(row['superficie_total']) else None,
-                        superficie_cubierta=float(row['superficie_cubierta']) if not pd.isna(row['superficie_cubierta']) else None,
-                        gastos_comunes=float(row['gastos_comunes']) if not pd.isna(row['gastos_comunes']) else None,
-                        contribuciones=float(row['contribuciones']) if not pd.isna(row['contribuciones']) else None,
-                        expensas=float(row['expensas']) if not pd.isna(row['expensas']) else None,
-                        latitud=float(row['latitud']) if not pd.isna(row['latitud']) else None,
-                        longitud=float(row['longitud']) if not pd.isna(row['longitud']) else None,
-                        agent=Agent.objects.get(id=int(row['agente_id'])) if not pd.isna(row['agente_id']) else None,
-                        tipo_operacion=str(row['tipo_operacion']),
-                        is_published=is_published
-                    )
-                    propiedades_creadas += 1
-                    print(f"✓ Propiedad creada exitosamente: {codigo} (publicada: {is_published})")
+                    # Preparar los datos de la propiedad
+                    property_data = {
+                        'title': str(row['title']),
+                        'tipo_propiedad': str(row['tipo_propiedad']),
+                        'descripcion': str(row['descripcion']) if not pd.isna(row['descripcion']) else "",
+                        'direccion': str(row['direccion']),
+                        'region_id': int(row['region_id']) if not pd.isna(row['region_id']) else None,
+                        'comuna': str(row['comuna']) if not pd.isna(row['comuna']) else None,
+                        'ubicacion_referencia': str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
+                        'precio_venta': int(float(row['precio_venta'])) if not pd.isna(row['precio_venta']) else None,
+                        'precio_renta': int(float(row['precio_renta'])) if not pd.isna(row['precio_renta']) else None,
+                        'moneda_precio': 'UF' if str(row['moneda']).upper().strip() == 'UF' else 'CLP',
+                        'habitaciones': int(row['habitaciones']) if not pd.isna(row['habitaciones']) else 0,
+                        'baños': int(row['baños']) if not pd.isna(row['baños']) else 0,
+                        'superficie_total': float(row['superficie_total']) if not pd.isna(row['superficie_total']) else None,
+                        'superficie_cubierta': float(row['superficie_cubierta']) if not pd.isna(row['superficie_cubierta']) else None,
+                        'gastos_comunes': float(row['gastos_comunes']) if not pd.isna(row['gastos_comunes']) else None,
+                        'contribuciones': float(row['contribuciones']) if not pd.isna(row['contribuciones']) else None,
+                        'expensas': float(row['expensas']) if not pd.isna(row['expensas']) else None,
+                        'latitud': float(row['latitud']) if not pd.isna(row['latitud']) else None,
+                        'longitud': float(row['longitud']) if not pd.isna(row['longitud']) else None,
+                        'agent_id': int(row['agente_id']) if not pd.isna(row['agente_id']) else None,
+                        'tipo_operacion': str(row['tipo_operacion']),
+                        'is_published': is_published
+                    }
+
+                    # Buscar si la propiedad existe
+                    property_exists = Property.objects.filter(codigo=codigo).first()
+
+                    if property_exists:
+                        # Verificar si hay cambios en la propiedad
+                        if not self.properties_are_equal(property_exists, property_data):
+                            # Actualizar la propiedad existente
+                            self.update_property(property_exists, property_data)
+                            propiedades_modificadas += 1
+                            print(f"↻ Propiedad actualizada: {codigo}")
+                        else:
+                            # No hay cambios, se mantiene igual
+                            propiedades_existentes += 1
+                            print(f"= Propiedad sin cambios: {codigo}")
+                    else:
+                        # Crear nueva propiedad
+                        new_property = Property(
+                            codigo=codigo,
+                            valor_uf_al_momento=valor_uf
+                        )
+                        self.update_property(new_property, property_data)
+                        propiedades_creadas += 1
+                        print(f"✓ Propiedad creada: {codigo}")
 
                 except Exception as e:
                     error_msg = f"Error en fila {index + 2}: {str(e)}"
@@ -322,13 +395,14 @@ class MassPropertyUploadView(APIView):
                 "message": "Proceso completado",
                 "total_filas_procesadas": len(df),
                 "propiedades_creadas": propiedades_creadas,
-                "propiedades_ignoradas": propiedades_existentes,
+                "propiedades_modificadas": propiedades_modificadas,
+                "propiedades_sin_cambios": propiedades_existentes,
                 "propiedades_con_error": len(errores),
                 "errores": errores if errores else None
             }
 
             return Response(resumen, 
-                          status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_200_OK)
+                        status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_200_OK)
 
         except Exception as e:
             print(f"Error general: {str(e)}")
