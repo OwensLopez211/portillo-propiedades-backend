@@ -275,6 +275,12 @@ class MassPropertyUploadView(APIView):
                 # Convertir la moneda del Excel a la nomenclatura del modelo
                 moneda_precio = 'UF' if str(row['moneda']).upper() == 'UF' else 'CLP'
 
+                # Procesar el campo is_published (nuevo)
+                is_published = True  # valor por defecto
+                if 'publicar' in row:  # si existe la columna 'publicar'
+                    # Convertir a booleano. Acepta 'SI', 'YES', '1', 'TRUE' como verdadero
+                    is_published = str(row['publicar']).upper() in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
+
                 # Buscar el agente por ID
                 agent = Agent.objects.get(id=row['agente_id']) if not pd.isna(row['agente_id']) else None
 
