@@ -269,7 +269,7 @@ class MassPropertyUploadView(APIView):
         if codigo:
             # Si se proporciona un código, buscar por código primero
             return Property.objects.filter(
-                Q(ubicacion_referencia=codigo) |  # Usamos ubicacion_referencia para almacenar el código
+                Q(codigo=codigo) |  # Ahora usamos el campo codigo
                 Q(direccion=direccion, title=title)
             ).exists()
         else:

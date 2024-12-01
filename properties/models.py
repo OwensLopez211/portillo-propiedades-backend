@@ -83,6 +83,15 @@ class Property(models.Model):
         (MONEDA_UF, 'UF'),
     ]
 
+    # Nuevo campo código
+    codigo = models.CharField(
+        max_length=100, 
+        unique=True, 
+        null=True, 
+        blank=True,
+        help_text="Código único de la propiedad"
+    )
+
     moneda_precio = models.CharField(
         max_length=3,
         choices=MONEDA_CHOICES,
