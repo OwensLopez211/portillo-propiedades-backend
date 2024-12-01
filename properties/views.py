@@ -239,30 +239,15 @@ class MassPropertyUploadView(APIView):
     def post(self, request):
         logger.info("Solicitud recibida para subir propiedades masivamente.")
         
-        # Verificar si hay un archivo Excel
         excel_file = request.FILES.get('excel')
         if not excel_file:
             return Response({"error": "No se subió un archivo Excel"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Leer el archivo Excel
         try:
             df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
             print("Columnas leídas desde el archivo Excel:", df.columns.tolist())
         except Exception as e:
             return Response({"error": f"Error al leer el archivo Excel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Validar columnas esperadas
-        columnas_esperadas = [
-            'title', 'tipo_propiedad', 'descripcion', 'direccion', 'region_id', 'comuna', 
-            'ubicacion_referencia', 'precio_venta', 'precio_renta', 'moneda', 
-            'habitaciones', 'baños', 'superficie_total', 'superficie_cubierta', 
-            'gastos_comunes', 'contribuciones', 'expensas', 'latitud', 'longitud', 
-            'agente_id', 'tipo_operacion'
-        ]
-        columnas_faltantes = [col for col in columnas_esperadas if col not in df.columns]
-        if columnas_faltantes:
-            return Response({"error": f"Columnas faltantes en el archivo: {', '.join(columnas_faltantes)}"}, 
-                          status=status.HTTP_400_BAD_REQUEST)
 
         # Procesar cada fila del Excel
         for index, row in df.iterrows():
@@ -270,8 +255,25 @@ class MassPropertyUploadView(APIView):
                 # Obtener el valor actual de UF
                 valor_uf = Property.get_uf_value()
 
+                # Convertir y validar coordenadas
+                latitud = float(row['latitud']) if not pd.isna(row['latitud']) else None
+                longitud = float(row['longitud']) if not pd.isna(row['longitud']) else None
+
+                # Validar que las coordenadas estén dentro del rango permitido
+                if latitud is not None and (latitud < -90 or latitud > 90):
+                    raise ValueError(f"Latitud inválida en la fila {index + 2}: debe estar entre -90 y 90")
+                if longitud is not None and (longitud < -180 or longitud > 180):
+                    raise ValueError(f"Longitud inválida en la fila {index + 2}: debe estar entre -180 y 180")
+
+                # Convertir valores decimales a float con redondeo
+                superficie_total = round(float(row['superficie_total']), 2) if not pd.isna(row['superficie_total']) else None
+                superficie_cubierta = round(float(row['superficie_cubierta']), 2) if not pd.isna(row['superficie_cubierta']) else None
+                gastos_comunes = round(float(row['gastos_comunes']), 2) if not pd.isna(row['gastos_comunes']) else None
+                contribuciones = round(float(row['contribuciones']), 2) if not pd.isna(row['contribuciones']) else None
+                expensas = round(float(row['expensas']), 2) if not pd.isna(row['expensas']) else None
+
                 # Convertir la moneda del Excel a la nomenclatura del modelo
-                moneda_precio = 'UF' if row['moneda'].upper() == 'UF' else 'CLP'
+                moneda_precio = 'UF' if str(row['moneda']).upper() == 'UF' else 'CLP'
 
                 # Buscar el agente por ID
                 agent = Agent.objects.get(id=row['agente_id']) if not pd.isna(row['agente_id']) else None
@@ -282,32 +284,36 @@ class MassPropertyUploadView(APIView):
 
                 # Crear la propiedad con los campos actualizados
                 Property.objects.create(
-                    title=row['title'],
-                    tipo_propiedad=row['tipo_propiedad'],
-                    descripcion=row['descripcion'],
-                    direccion=row['direccion'],
+                    title=str(row['title']),
+                    tipo_propiedad=str(row['tipo_propiedad']),
+                    descripcion=str(row['descripcion']),
+                    direccion=str(row['direccion']),
                     region=region,
                     comuna=comuna,
-                    ubicacion_referencia=row['ubicacion_referencia'] if not pd.isna(row['ubicacion_referencia']) else None,
-                    precio_venta=row['precio_venta'] if not pd.isna(row['precio_venta']) else None,
-                    precio_renta=row['precio_renta'] if not pd.isna(row['precio_renta']) else None,
+                    ubicacion_referencia=str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
+                    precio_venta=int(row['precio_venta']) if not pd.isna(row['precio_venta']) else None,
+                    precio_renta=int(row['precio_renta']) if not pd.isna(row['precio_renta']) else None,
                     moneda_precio=moneda_precio,
                     valor_uf_al_momento=valor_uf,
-                    habitaciones=row['habitaciones'],
-                    baños=row['baños'],
-                    superficie_total=row['superficie_total'] if not pd.isna(row['superficie_total']) else None,
-                    superficie_cubierta=row['superficie_cubierta'] if not pd.isna(row['superficie_cubierta']) else None,
-                    gastos_comunes=row['gastos_comunes'] if not pd.isna(row['gastos_comunes']) else None,
-                    contribuciones=row['contribuciones'] if not pd.isna(row['contribuciones']) else None,
-                    expensas=row['expensas'] if not pd.isna(row['expensas']) else None,
-                    latitud=row['latitud'] if not pd.isna(row['latitud']) else None,
-                    longitud=row['longitud'] if not pd.isna(row['longitud']) else None,
+                    habitaciones=int(row['habitaciones']),
+                    baños=int(row['baños']),
+                    superficie_total=superficie_total,
+                    superficie_cubierta=superficie_cubierta,
+                    gastos_comunes=gastos_comunes,
+                    contribuciones=contribuciones,
+                    expensas=expensas,
+                    latitud=latitud,
+                    longitud=longitud,
                     agent=agent,
-                    tipo_operacion=row['tipo_operacion'],
-                    is_published=True  # Por defecto publicada
+                    tipo_operacion=str(row['tipo_operacion']),
+                    is_published=True
                 )
                 print(f"Propiedad creada exitosamente para la fila {index + 2}")
 
+            except ValueError as e:
+                return Response({
+                    "error": f"Error en la fila {index + 2}: {str(e)}"
+                }, status=status.HTTP_400_BAD_REQUEST)
             except Exception as e:
                 return Response({
                     "error": f"Error en la fila {index + 2}: {str(e)}"
