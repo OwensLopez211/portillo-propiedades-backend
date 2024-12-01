@@ -247,8 +247,7 @@ class MassPropertyUploadView(APIView):
         # Leer el archivo Excel
         try:
             df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
-            print("Columnas leídas desde el archivo Excel:", df.columns.tolist())  # Imprime los nombres de las columnas
-            print(f"Datos del Excel: {df.head()}")
+            print("Columnas leídas desde el archivo Excel:", df.columns.tolist())
         except Exception as e:
             return Response({"error": f"Error al leer el archivo Excel: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -262,21 +261,26 @@ class MassPropertyUploadView(APIView):
         ]
         columnas_faltantes = [col for col in columnas_esperadas if col not in df.columns]
         if columnas_faltantes:
-            return Response({"error": f"Columnas faltantes en el archivo: {', '.join(columnas_faltantes)}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": f"Columnas faltantes en el archivo: {', '.join(columnas_faltantes)}"}, 
+                          status=status.HTTP_400_BAD_REQUEST)
 
         # Procesar cada fila del Excel
         for index, row in df.iterrows():
             try:
-                print(f"Procesando fila {index}: {row}")
+                # Obtener el valor actual de UF
+                valor_uf = Property.get_uf_value()
+
+                # Convertir la moneda del Excel a la nomenclatura del modelo
+                moneda_precio = 'UF' if row['moneda'].upper() == 'UF' else 'CLP'
 
                 # Buscar el agente por ID
-                agent = Agent.objects.get(id=row['agente_id']) if 'agente_id' in row and not pd.isna(row['agente_id']) else None
+                agent = Agent.objects.get(id=row['agente_id']) if not pd.isna(row['agente_id']) else None
 
-                # Buscar la región y la comuna por ID y nombre
-                region = Region.objects.get(id=row['region_id']) if 'region_id' in row and not pd.isna(row['region_id']) else None
-                comuna = Comuna.objects.get(nombre=row['comuna']) if 'comuna' in row and not pd.isna(row['comuna']) else None
+                # Buscar la región y la comuna
+                region = Region.objects.get(id=row['region_id']) if not pd.isna(row['region_id']) else None
+                comuna = Comuna.objects.get(nombre=row['comuna']) if not pd.isna(row['comuna']) else None
 
-                # Crear la propiedad con nombres de campos actualizados
+                # Crear la propiedad con los campos actualizados
                 Property.objects.create(
                     title=row['title'],
                     tipo_propiedad=row['tipo_propiedad'],
@@ -284,10 +288,11 @@ class MassPropertyUploadView(APIView):
                     direccion=row['direccion'],
                     region=region,
                     comuna=comuna,
-                    ubicacion_referencia=row['ubicacion_referencia'] if 'ubicacion_referencia' in row and not pd.isna(row['ubicacion_referencia']) else None,
+                    ubicacion_referencia=row['ubicacion_referencia'] if not pd.isna(row['ubicacion_referencia']) else None,
                     precio_venta=row['precio_venta'] if not pd.isna(row['precio_venta']) else None,
                     precio_renta=row['precio_renta'] if not pd.isna(row['precio_renta']) else None,
-                    moneda=row['moneda'],
+                    moneda_precio=moneda_precio,
+                    valor_uf_al_momento=valor_uf,
                     habitaciones=row['habitaciones'],
                     baños=row['baños'],
                     superficie_total=row['superficie_total'] if not pd.isna(row['superficie_total']) else None,
@@ -298,16 +303,19 @@ class MassPropertyUploadView(APIView):
                     latitud=row['latitud'] if not pd.isna(row['latitud']) else None,
                     longitud=row['longitud'] if not pd.isna(row['longitud']) else None,
                     agent=agent,
-                    tipo_operacion=row['tipo_operacion']
+                    tipo_operacion=row['tipo_operacion'],
+                    is_published=True  # Por defecto publicada
                 )
-                print(f"Propiedad creada para la fila {index}")
-            except KeyError as e:
-                return Response({"error": f"Campo faltante o incorrecto: {str(e)} en la fila {index}"}, status=status.HTTP_400_BAD_REQUEST)
-            except Exception as e:
-                return Response({"error": f"Error al crear la propiedad en la fila {index}: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+                print(f"Propiedad creada exitosamente para la fila {index + 2}")
 
-        print("Propiedades creadas exitosamente")
-        return Response({"message": "Propiedades subidas exitosamente"}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({
+                    "error": f"Error en la fila {index + 2}: {str(e)}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "message": "Propiedades subidas exitosamente"
+        }, status=status.HTTP_201_CREATED)
     
 @api_view(['GET'])
 def count_properties(request):
