@@ -237,12 +237,8 @@ class MassPropertyUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_is_published_value(self, value):
-        """
-        Convierte el valor de 'publicar' del Excel a booleano
-        """
         if pd.isna(value):
-            return True  # Valor por defecto si está vacío
-        
+            return True
         value_str = str(value).strip().upper()
         return value_str in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
 
@@ -265,22 +261,30 @@ class MassPropertyUploadView(APIView):
             print(f"Total de filas leídas: {len(df)}")
             
             propiedades_creadas = 0
+            propiedades_existentes = 0
             errores = []
+
+            # Obtener todos los códigos existentes
+            codigos_existentes = set(Property.objects.values_list('codigo', flat=True))
 
             for index, row in df.iterrows():
                 try:
                     if pd.isna(row['codigo']) or pd.isna(row['title']):
                         continue
 
-                    # Procesar el valor de publicar
-                    is_published = self.get_is_published_value(row.get('publicar', True))
-                    print(f"Valor 'publicar' en Excel: {row.get('publicar')}")
-                    print(f"is_published procesado: {is_published}")
+                    codigo = str(row['codigo']).strip()
 
+                    # Verificar si la propiedad ya existe
+                    if codigo in codigos_existentes:
+                        print(f"Propiedad {codigo} ya existe, ignorando...")
+                        propiedades_existentes += 1
+                        continue
+
+                    is_published = self.get_is_published_value(row.get('publicar', True))
                     valor_uf = Property.get_uf_value()
 
                     Property.objects.create(
-                        codigo=str(row['codigo']),
+                        codigo=codigo,
                         title=str(row['title']),
                         tipo_propiedad=str(row['tipo_propiedad']),
                         descripcion=str(row['descripcion']) if not pd.isna(row['descripcion']) else "",
@@ -303,10 +307,10 @@ class MassPropertyUploadView(APIView):
                         longitud=float(row['longitud']) if not pd.isna(row['longitud']) else None,
                         agent=Agent.objects.get(id=int(row['agente_id'])) if not pd.isna(row['agente_id']) else None,
                         tipo_operacion=str(row['tipo_operacion']),
-                        is_published=is_published  # Usar el valor procesado
+                        is_published=is_published
                     )
                     propiedades_creadas += 1
-                    print(f"✓ Propiedad creada exitosamente: {row['codigo']} (publicada: {is_published})")
+                    print(f"✓ Propiedad creada exitosamente: {codigo} (publicada: {is_published})")
 
                 except Exception as e:
                     error_msg = f"Error en fila {index + 2}: {str(e)}"
@@ -318,12 +322,13 @@ class MassPropertyUploadView(APIView):
                 "message": "Proceso completado",
                 "total_filas_procesadas": len(df),
                 "propiedades_creadas": propiedades_creadas,
+                "propiedades_ignoradas": propiedades_existentes,
                 "propiedades_con_error": len(errores),
                 "errores": errores if errores else None
             }
 
             return Response(resumen, 
-                          status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_400_BAD_REQUEST)
+                          status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_200_OK)
 
         except Exception as e:
             print(f"Error general: {str(e)}")
