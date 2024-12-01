@@ -276,7 +276,7 @@ class MassPropertyUploadView(APIView):
                 moneda_precio = 'UF' if str(row['moneda']).upper() == 'UF' else 'CLP'
 
                 # Procesar el campo is_published (nuevo)
-                is_published = True  # valor por defecto
+                is_published = False  # valor por defecto
                 if 'publicar' in row:  # si existe la columna 'publicar'
                     # Convertir a booleano. Acepta 'SI', 'YES', '1', 'TRUE' como verdadero
                     is_published = str(row['publicar']).upper() in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
@@ -312,7 +312,7 @@ class MassPropertyUploadView(APIView):
                     longitud=longitud,
                     agent=agent,
                     tipo_operacion=str(row['tipo_operacion']),
-                    is_published=True
+                    is_published=is_published
                 )
                 print(f"Propiedad creada exitosamente para la fila {index + 2}")
 
