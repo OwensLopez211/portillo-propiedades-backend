@@ -244,84 +244,93 @@ class MassPropertyUploadView(APIView):
             return Response({"error": "No se subió un archivo Excel"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
-            print("Columnas leídas desde el archivo Excel:", df.columns.tolist())
-
-            # Contador para propiedades creadas
+            # Leer el Excel ignorando filas vacías
+            df = pd.read_excel(
+                excel_file, 
+                engine='openpyxl',
+                skiprows=0,  # No saltamos la primera fila porque es el encabezado
+                na_filter=True  # Mantener el filtrado de valores NA/vacíos
+            )
+            
+            # Eliminar filas completamente vacías
+            df = df.dropna(how='all')
+            
+            print(f"Total de filas leídas (sin contar vacías): {len(df)}")
+            print("Columnas encontradas:", df.columns.tolist())
+            
             propiedades_creadas = 0
             errores = []
 
-            # Procesar cada fila del Excel
+            # Procesar cada fila
             for index, row in df.iterrows():
                 try:
+                    print(f"\nProcesando fila {index + 2}:")
+                    
+                    # Verificar si la fila tiene datos
+                    if pd.isna(row['codigo']) or pd.isna(row['title']):
+                        continue  # Saltar filas sin código o título
+                        
+                    print(f"Código: {row['codigo']}, Título: {row['title']}")
+
+                    # Verificar duplicados
+                    if Property.objects.filter(codigo=str(row['codigo'])).exists():
+                        errores.append(f"Fila {index + 2}: Ya existe una propiedad con el código {row['codigo']}")
+                        continue
+
                     # Obtener el valor actual de UF
                     valor_uf = Property.get_uf_value()
 
-                    # Obtener el código de la columna correcta
-                    codigo = str(row['codigo']) if 'codigo' in row and not pd.isna(row['codigo']) else None
+                    # Procesar precios
+                    precio_venta = None
+                    precio_renta = None
                     
-                    # Verificar si ya existe una propiedad con este código
-                    if codigo and Property.objects.filter(codigo=codigo).exists():
-                        errores.append(f"Fila {index + 2}: Ya existe una propiedad con el código {codigo}")
-                        continue
-
-                    # Convertir y validar coordenadas
-                    latitud = float(row['latitud']) if not pd.isna(row['latitud']) else None
-                    longitud = float(row['longitud']) if not pd.isna(row['longitud']) else None
-
-                    # Convertir la moneda del Excel a la nomenclatura del modelo
-                    moneda_precio = 'UF' if str(row['moneda']).upper() == 'UF' else 'CLP'
-
-                    # Procesamiento del campo is_published
-                    is_published = True
-                    if 'publicar' in row:
-                        is_published = str(row['publicar']).upper() in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
-
-                    # Buscar relaciones
-                    agent = Agent.objects.get(id=row['agente_id']) if not pd.isna(row['agente_id']) else None
-                    region = Region.objects.get(id=row['region_id']) if not pd.isna(row['region_id']) else None
-                    comuna = Comuna.objects.get(nombre=row['comuna']) if not pd.isna(row['comuna']) else None
+                    if not pd.isna(row['precio_venta']):
+                        precio_venta = int(float(row['precio_venta']))
+                    if not pd.isna(row['precio_renta']):
+                        precio_renta = int(float(row['precio_renta']))
 
                     # Crear la propiedad
                     Property.objects.create(
-                        codigo=codigo,  # Usar el campo codigo directamente
+                        codigo=str(row['codigo']),
                         title=str(row['title']),
                         tipo_propiedad=str(row['tipo_propiedad']),
-                        descripcion=str(row['descripcion']),
+                        descripcion=str(row['descripcion']) if not pd.isna(row['descripcion']) else "",
                         direccion=str(row['direccion']),
-                        region=region,
-                        comuna=comuna,
+                        region=Region.objects.get(id=int(row['region_id'])) if not pd.isna(row['region_id']) else None,
+                        comuna=Comuna.objects.get(nombre=str(row['comuna'])) if not pd.isna(row['comuna']) else None,
                         ubicacion_referencia=str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
-                        precio_venta=int(row['precio_venta']) if not pd.isna(row['precio_venta']) else None,
-                        precio_renta=int(row['precio_renta']) if not pd.isna(row['precio_renta']) else None,
-                        moneda_precio=moneda_precio,
+                        precio_venta=precio_venta,
+                        precio_renta=precio_renta,
+                        moneda_precio='UF' if str(row['moneda']).upper().strip() == 'UF' else 'CLP',
                         valor_uf_al_momento=valor_uf,
-                        habitaciones=int(row['habitaciones']),
-                        baños=int(row['baños']),
-                        superficie_total=round(float(row['superficie_total']), 2) if not pd.isna(row['superficie_total']) else None,
-                        superficie_cubierta=round(float(row['superficie_cubierta']), 2) if not pd.isna(row['superficie_cubierta']) else None,
-                        gastos_comunes=round(float(row['gastos_comunes']), 2) if not pd.isna(row['gastos_comunes']) else None,
-                        contribuciones=round(float(row['contribuciones']), 2) if not pd.isna(row['contribuciones']) else None,
-                        expensas=round(float(row['expensas']), 2) if not pd.isna(row['expensas']) else None,
-                        latitud=latitud,
-                        longitud=longitud,
-                        agent=agent,
+                        habitaciones=int(row['habitaciones']) if not pd.isna(row['habitaciones']) else 0,
+                        baños=int(row['baños']) if not pd.isna(row['baños']) else 0,
+                        superficie_total=float(row['superficie_total']) if not pd.isna(row['superficie_total']) else None,
+                        superficie_cubierta=float(row['superficie_cubierta']) if not pd.isna(row['superficie_cubierta']) else None,
+                        gastos_comunes=float(row['gastos_comunes']) if not pd.isna(row['gastos_comunes']) else None,
+                        contribuciones=float(row['contribuciones']) if not pd.isna(row['contribuciones']) else None,
+                        expensas=float(row['expensas']) if not pd.isna(row['expensas']) else None,
+                        latitud=float(row['latitud']) if not pd.isna(row['latitud']) else None,
+                        longitud=float(row['longitud']) if not pd.isna(row['longitud']) else None,
+                        agent=Agent.objects.get(id=int(row['agente_id'])) if not pd.isna(row['agente_id']) else None,
                         tipo_operacion=str(row['tipo_operacion']),
-                        is_published=is_published
+                        is_published=True  # Por defecto publicada
                     )
                     propiedades_creadas += 1
-                    print(f"Propiedad creada exitosamente para la fila {index + 2}")
+                    print(f"✓ Propiedad creada exitosamente: {row['codigo']}")
 
                 except Exception as e:
-                    error_msg = f"Error en la fila {index + 2}: {str(e)}"
-                    print(error_msg)
+                    error_msg = f"Error en fila {index + 2}: {str(e)}"
+                    print(f"✗ {error_msg}")
                     errores.append(error_msg)
+                    continue
 
-            # Preparar mensaje de resumen
+            # Preparar respuesta
             resumen = {
                 "message": "Proceso completado",
+                "total_filas_procesadas": len(df),
                 "propiedades_creadas": propiedades_creadas,
-                "total_filas": len(df),
+                "propiedades_con_error": len(errores),
                 "errores": errores if errores else None
             }
 
@@ -329,6 +338,7 @@ class MassPropertyUploadView(APIView):
                           status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            print(f"Error general: {str(e)}")
             return Response({
                 "error": f"Error al procesar el archivo: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
