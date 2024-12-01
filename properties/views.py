@@ -236,49 +236,6 @@ class MassPropertyUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
-    REQUIRED_COLUMNS = {
-        'title',
-        'tipo_propiedad',
-        'descripcion',
-        'direccion',
-        'region_id',
-        'comuna',
-        'ubicacion_referencia',
-        'precio_venta',
-        'precio_renta',
-        'moneda',
-        'habitaciones',
-        'baños',
-        'superficie_total',
-        'superficie_cubierta',
-        'gastos_comunes',
-        'contribuciones',
-        'expensas',
-        'latitud',
-        'longitud',
-        'agente_id',
-        'tipo_operacion',
-        'publicar',
-        'codigo'  # Nueva columna opcional para identificación única
-    }
-
-    def check_duplicate_property(self, direccion, title, codigo=None):
-        """
-        Verifica si una propiedad ya existe basándose en diferentes criterios
-        """
-        if codigo:
-            # Si se proporciona un código, buscar por código primero
-            return Property.objects.filter(
-                Q(codigo=codigo) |  # Ahora usamos el campo codigo
-                Q(direccion=direccion, title=title)
-            ).exists()
-        else:
-            # Si no hay código, buscar por combinación de dirección y título
-            return Property.objects.filter(
-                direccion=direccion,
-                title=title
-            ).exists()
-
     def post(self, request):
         logger.info("Solicitud recibida para subir propiedades masivamente.")
         
@@ -288,39 +245,34 @@ class MassPropertyUploadView(APIView):
 
         try:
             df = pd.read_excel(excel_file, sheet_name='Plantilla_Propiedades', engine='openpyxl')
-            
-            # Verificar columnas existentes
-            columnas_excel = set(df.columns)
-            columnas_requeridas = self.REQUIRED_COLUMNS - {'publicar', 'codigo'}  # Estas columnas son opcionales
-            columnas_faltantes = columnas_requeridas - columnas_excel
-            
-            if columnas_faltantes:
-                return Response({
-                    "error": f"Faltan las siguientes columnas requeridas: {', '.join(columnas_faltantes)}"
-                }, status=status.HTTP_400_BAD_REQUEST)
+            print("Columnas leídas desde el archivo Excel:", df.columns.tolist())
 
-            # Contadores para el resumen
+            # Contador para propiedades creadas
             propiedades_creadas = 0
-            propiedades_duplicadas = 0
             errores = []
 
             # Procesar cada fila del Excel
             for index, row in df.iterrows():
                 try:
-                    # Verificar duplicados
+                    # Obtener el valor actual de UF
+                    valor_uf = Property.get_uf_value()
+
+                    # Obtener el código de la columna correcta
                     codigo = str(row['codigo']) if 'codigo' in row and not pd.isna(row['codigo']) else None
-                    if self.check_duplicate_property(str(row['direccion']), str(row['title']), codigo):
-                        propiedades_duplicadas += 1
-                        print(f"Propiedad duplicada en fila {index + 2}, saltando...")
+                    
+                    # Verificar si ya existe una propiedad con este código
+                    if codigo and Property.objects.filter(codigo=codigo).exists():
+                        errores.append(f"Fila {index + 2}: Ya existe una propiedad con el código {codigo}")
                         continue
 
-                    # Resto del código de creación de propiedad...
-                    valor_uf = Property.get_uf_value()
+                    # Convertir y validar coordenadas
                     latitud = float(row['latitud']) if not pd.isna(row['latitud']) else None
                     longitud = float(row['longitud']) if not pd.isna(row['longitud']) else None
 
-                    # Validaciones y conversiones...
+                    # Convertir la moneda del Excel a la nomenclatura del modelo
                     moneda_precio = 'UF' if str(row['moneda']).upper() == 'UF' else 'CLP'
+
+                    # Procesamiento del campo is_published
                     is_published = True
                     if 'publicar' in row:
                         is_published = str(row['publicar']).upper() in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
@@ -332,13 +284,14 @@ class MassPropertyUploadView(APIView):
 
                     # Crear la propiedad
                     Property.objects.create(
+                        codigo=codigo,  # Usar el campo codigo directamente
                         title=str(row['title']),
                         tipo_propiedad=str(row['tipo_propiedad']),
                         descripcion=str(row['descripcion']),
                         direccion=str(row['direccion']),
                         region=region,
                         comuna=comuna,
-                        ubicacion_referencia=codigo if codigo else (str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None),
+                        ubicacion_referencia=str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
                         precio_venta=int(row['precio_venta']) if not pd.isna(row['precio_venta']) else None,
                         precio_renta=int(row['precio_renta']) if not pd.isna(row['precio_renta']) else None,
                         moneda_precio=moneda_precio,
@@ -360,23 +313,26 @@ class MassPropertyUploadView(APIView):
                     print(f"Propiedad creada exitosamente para la fila {index + 2}")
 
                 except Exception as e:
-                    errores.append(f"Error en fila {index + 2}: {str(e)}")
+                    error_msg = f"Error en la fila {index + 2}: {str(e)}"
+                    print(error_msg)
+                    errores.append(error_msg)
 
             # Preparar mensaje de resumen
             resumen = {
                 "message": "Proceso completado",
                 "propiedades_creadas": propiedades_creadas,
-                "propiedades_duplicadas": propiedades_duplicadas,
+                "total_filas": len(df),
                 "errores": errores if errores else None
             }
 
-            return Response(resumen, status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_200_OK)
+            return Response(resumen, 
+                          status=status.HTTP_201_CREATED if propiedades_creadas > 0 else status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             return Response({
                 "error": f"Error al procesar el archivo: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
-    
+        
 @api_view(['GET'])
 def count_properties(request):
     property_count = Property.objects.count()
