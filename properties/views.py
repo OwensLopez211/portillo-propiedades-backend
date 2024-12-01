@@ -236,6 +236,16 @@ class MassPropertyUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [IsAuthenticated]
 
+    def get_is_published_value(self, value):
+        """
+        Convierte el valor de 'publicar' del Excel a booleano
+        """
+        if pd.isna(value):
+            return True  # Valor por defecto si está vacío
+        
+        value_str = str(value).strip().upper()
+        return value_str in ['SI', 'YES', '1', 'TRUE', 'VERDADERO']
+
     def post(self, request):
         logger.info("Solicitud recibida para subir propiedades masivamente.")
         
@@ -244,52 +254,31 @@ class MassPropertyUploadView(APIView):
             return Response({"error": "No se subió un archivo Excel"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Leer el Excel ignorando filas vacías
             df = pd.read_excel(
                 excel_file, 
                 engine='openpyxl',
-                skiprows=0,  # No saltamos la primera fila porque es el encabezado
-                na_filter=True  # Mantener el filtrado de valores NA/vacíos
+                skiprows=0,
+                na_filter=True
             )
             
-            # Eliminar filas completamente vacías
             df = df.dropna(how='all')
-            
-            print(f"Total de filas leídas (sin contar vacías): {len(df)}")
-            print("Columnas encontradas:", df.columns.tolist())
+            print(f"Total de filas leídas: {len(df)}")
             
             propiedades_creadas = 0
             errores = []
 
-            # Procesar cada fila
             for index, row in df.iterrows():
                 try:
-                    print(f"\nProcesando fila {index + 2}:")
-                    
-                    # Verificar si la fila tiene datos
                     if pd.isna(row['codigo']) or pd.isna(row['title']):
-                        continue  # Saltar filas sin código o título
-                        
-                    print(f"Código: {row['codigo']}, Título: {row['title']}")
-
-                    # Verificar duplicados
-                    if Property.objects.filter(codigo=str(row['codigo'])).exists():
-                        errores.append(f"Fila {index + 2}: Ya existe una propiedad con el código {row['codigo']}")
                         continue
 
-                    # Obtener el valor actual de UF
+                    # Procesar el valor de publicar
+                    is_published = self.get_is_published_value(row.get('publicar', True))
+                    print(f"Valor 'publicar' en Excel: {row.get('publicar')}")
+                    print(f"is_published procesado: {is_published}")
+
                     valor_uf = Property.get_uf_value()
 
-                    # Procesar precios
-                    precio_venta = None
-                    precio_renta = None
-                    
-                    if not pd.isna(row['precio_venta']):
-                        precio_venta = int(float(row['precio_venta']))
-                    if not pd.isna(row['precio_renta']):
-                        precio_renta = int(float(row['precio_renta']))
-
-                    # Crear la propiedad
                     Property.objects.create(
                         codigo=str(row['codigo']),
                         title=str(row['title']),
@@ -299,8 +288,8 @@ class MassPropertyUploadView(APIView):
                         region=Region.objects.get(id=int(row['region_id'])) if not pd.isna(row['region_id']) else None,
                         comuna=Comuna.objects.get(nombre=str(row['comuna'])) if not pd.isna(row['comuna']) else None,
                         ubicacion_referencia=str(row['ubicacion_referencia']) if not pd.isna(row['ubicacion_referencia']) else None,
-                        precio_venta=precio_venta,
-                        precio_renta=precio_renta,
+                        precio_venta=int(float(row['precio_venta'])) if not pd.isna(row['precio_venta']) else None,
+                        precio_renta=int(float(row['precio_renta'])) if not pd.isna(row['precio_renta']) else None,
                         moneda_precio='UF' if str(row['moneda']).upper().strip() == 'UF' else 'CLP',
                         valor_uf_al_momento=valor_uf,
                         habitaciones=int(row['habitaciones']) if not pd.isna(row['habitaciones']) else 0,
@@ -314,10 +303,10 @@ class MassPropertyUploadView(APIView):
                         longitud=float(row['longitud']) if not pd.isna(row['longitud']) else None,
                         agent=Agent.objects.get(id=int(row['agente_id'])) if not pd.isna(row['agente_id']) else None,
                         tipo_operacion=str(row['tipo_operacion']),
-                        is_published=True  # Por defecto publicada
+                        is_published=is_published  # Usar el valor procesado
                     )
                     propiedades_creadas += 1
-                    print(f"✓ Propiedad creada exitosamente: {row['codigo']}")
+                    print(f"✓ Propiedad creada exitosamente: {row['codigo']} (publicada: {is_published})")
 
                 except Exception as e:
                     error_msg = f"Error en fila {index + 2}: {str(e)}"
@@ -325,7 +314,6 @@ class MassPropertyUploadView(APIView):
                     errores.append(error_msg)
                     continue
 
-            # Preparar respuesta
             resumen = {
                 "message": "Proceso completado",
                 "total_filas_procesadas": len(df),
