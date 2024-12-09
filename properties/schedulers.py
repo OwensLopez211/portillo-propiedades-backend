@@ -1,77 +1,94 @@
-# properties/schedulers.py
 from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore
-from django.utils import timezone
-import requests
-from decimal import Decimal
-from datetime import datetime
-from .models import UFValue, Property
+import logging
 
-def actualizar_uf():
+logger = logging.getLogger(__name__)
+
+# Referencia global para el scheduler
+scheduler = None  
+
+
+def start_scheduler_without_db_access():
+    """
+    Inicia el scheduler sin programar tareas que acceden a la base de datos.
+    """
+    global scheduler
+    if scheduler and scheduler.running:
+        print("El scheduler ya está corriendo.")
+        return  # Evita inicialización duplicada
+
     try:
-        response = requests.get('https://mindicador.cl/api/uf')
-        if response.status_code == 200:
-            data = response.json()
-            latest_uf = data['serie'][0]
-            
-            fecha = datetime.strptime(
-                latest_uf['fecha'].split('T')[0],
-                '%Y-%m-%d'
-            ).date()
-            
-            UFValue.objects.update_or_create(
-                date=fecha,
-                defaults={'value': Decimal(str(latest_uf['valor']))}
-            )
-            print(f"UF actualizada: {latest_uf['valor']} para fecha {fecha}")
+        print("Iniciando el scheduler...")
+        scheduler = BackgroundScheduler()
+        scheduler.add_jobstore(DjangoJobStore(), "default")
+        scheduler.start()
+        print("Scheduler iniciado correctamente.")
+        logger.info("Scheduler iniciado sin tareas dependientes de la base de datos.")
     except Exception as e:
-        print(f"Error actualizando UF: {str(e)}")
+        print(f"Error al iniciar el scheduler: {e}")
+        logger.error(f"Error iniciando el scheduler: {e}")
 
-def actualizar_precios_clp():
-    """Actualiza los precios en CLP para todas las propiedades con precios en UF."""
+
+def schedule_tasks_with_db_access():
+    """
+    Programa tareas que requieren acceso a la base de datos.
+    Este método debe llamarse después de que Django haya cargado completamente.
+    """
+    global scheduler
+    if not scheduler or not scheduler.running:
+        logger.warning("El scheduler no está iniciado. No se pueden programar tareas.")
+        return
+
     try:
-        # Obtiene el valor más reciente de la UF
-        uf_value = UFValue.objects.first()
-        if not uf_value:
-            print("No hay valores de UF disponibles para actualizar precios.")
-            return
+        from .tasks import actualizar_uf, actualizar_precios_clp  # Importa tareas aquí para evitar problemas de inicialización
 
-        # Recorre propiedades que tienen precios en UF
-        propiedades = Property.objects.filter(moneda_precio='UF')
-        for propiedad in propiedades:
-            if propiedad.precio_venta:
-                propiedad.precio_venta = round(propiedad.precio_venta * uf_value.value, 2)
-            if propiedad.precio_renta:
-                propiedad.precio_renta = round(propiedad.precio_renta * uf_value.value, 2)
-            propiedad.save()
+        # Programar tarea para actualizar UF
+        scheduler.add_job(
+            actualizar_uf,
+            'cron',
+            hour=1,
+            minute=0,
+            name='actualizar_uf',
+            jobstore='default',
+            replace_existing=True
+        )
 
-        print(f"Precios en CLP actualizados para {propiedades.count()} propiedades.")
+        # Programar tarea para actualizar precios en CLP
+        scheduler.add_job(
+            actualizar_precios_clp,
+            'cron',
+            hour=1,
+            minute=20,
+            name='actualizar_precios_clp',
+            jobstore='default',
+            replace_existing=True
+        )
+
+        logger.info("Tareas programadas con acceso a la base de datos.")
     except Exception as e:
-        print(f"Error actualizando precios en CLP: {str(e)}")
+        logger.error(f"Error programando tareas con acceso a la base de datos: {e}")
 
-def start():
-    """Inicia el scheduler con las tareas programadas."""
-    scheduler = BackgroundScheduler()
-    scheduler.add_jobstore(DjangoJobStore(), "default")
-    
-    # Actualiza el valor de la UF todos los días a la 1:00 AM
-    scheduler.add_job(
-        actualizar_uf,
-        'cron',
-        hour=1,
-        minute=0,
-        name='actualizar_uf',
-        jobstore='default'
-    )
 
-    # Actualiza los precios en CLP todos los días a la 1:05 AM (después de actualizar la UF)
-    scheduler.add_job(
-        actualizar_precios_clp,
-        'cron',
-        hour=1,
-        minute=20,
-        name='actualizar_precios_clp',
-        jobstore='default'
-    )
-    
-    scheduler.start()
+def stop_scheduler():
+    """
+    Apaga el scheduler de forma segura.
+    Este método se llama durante el apagado del servidor.
+    """
+    global scheduler
+    if scheduler:
+        try:
+            scheduler.shutdown()
+            logger.info("Scheduler apagado.")
+        except Exception as e:
+            logger.error(f"Error al apagar el scheduler: {e}")
+
+def is_scheduler_running():
+    """
+    Verifica si el scheduler está activo.
+    """
+    global scheduler
+    if scheduler and scheduler.running:
+        logger.info("El scheduler está corriendo.")
+        return True
+    logger.warning("El scheduler NO está corriendo.")
+    return False

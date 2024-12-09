@@ -27,3 +27,39 @@ DEBUG 2024-11-30 20:45:00,477 views 21228 8268 Request data: {'nombre': 'Juan Pé
 INFO 2024-11-30 20:45:00,477 views 21228 8268 Attempting to send email to Contacto@newlandpropiedades.cl
 INFO 2024-11-30 20:45:04,220 views 21228 8268 Email sent successfully
 INFO 2024-11-30 20:45:04,225 basehttp 21228 8268 "POST /api/contact/enviar-correo/ HTTP/1.1" 200 42
+INFO 2024-12-09 13:00:41,782 autoreload 26828 28420 Watching for file changes with StatReloader
+INFO 2024-12-09 13:02:04,465 autoreload 26828 28420 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:02:05,421 autoreload 21192 23756 Watching for file changes with StatReloader
+INFO 2024-12-09 13:02:32,860 autoreload 9592 25904 Watching for file changes with StatReloader
+INFO 2024-12-09 13:03:05,334 autoreload 1320 29148 Watching for file changes with StatReloader
+INFO 2024-12-09 13:03:25,066 autoreload 1320 29148 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\schedulers.py changed, reloading.
+INFO 2024-12-09 13:03:27,019 autoreload 19852 21776 Watching for file changes with StatReloader
+INFO 2024-12-09 13:03:47,771 autoreload 19852 21776 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\schedulers.py changed, reloading.
+INFO 2024-12-09 13:03:49,419 autoreload 21256 29168 Watching for file changes with StatReloader
+INFO 2024-12-09 13:04:00,714 autoreload 28016 29572 Watching for file changes with StatReloader
+INFO 2024-12-09 13:04:17,820 autoreload 28016 29572 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:04:26,142 autoreload 17732 11704 Watching for file changes with StatReloader
+INFO 2024-12-09 13:07:54,439 autoreload 17732 11704 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\schedulers.py changed, reloading.
+INFO 2024-12-09 13:07:56,415 autoreload 17124 34240 Watching for file changes with StatReloader
+INFO 2024-12-09 13:21:39,727 autoreload 17124 34240 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:21:41,351 autoreload 34592 27556 Watching for file changes with StatReloader
+INFO 2024-12-09 13:21:52,095 autoreload 17172 25996 Watching for file changes with StatReloader
+INFO 2024-12-09 13:24:54,890 autoreload 17172 25996 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:24:56,659 autoreload 29064 25288 Watching for file changes with StatReloader
+INFO 2024-12-09 13:25:02,281 autoreload 34200 34316 Watching for file changes with StatReloader
+INFO 2024-12-09 13:25:37,685 autoreload 28652 3652 Watching for file changes with StatReloader
+INFO 2024-12-09 13:37:33,362 autoreload 28652 3652 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:37:35,107 autoreload 27132 34336 Watching for file changes with StatReloader
+INFO 2024-12-09 13:38:28,705 autoreload 27132 34336 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\schedulers.py changed, reloading.
+INFO 2024-12-09 13:38:30,587 autoreload 3652 18100 Watching for file changes with StatReloader
+INFO 2024-12-09 13:38:37,234 autoreload 17248 18456 Watching for file changes with StatReloader
+INFO 2024-12-09 13:39:16,012 autoreload 30896 28800 Watching for file changes with StatReloader
+INFO 2024-12-09 13:40:32,820 autoreload 30896 28800 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:40:33,788 autoreload 14740 3668 Watching for file changes with StatReloader
+INFO 2024-12-09 13:40:37,168 autoreload 14740 3668 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\apps.py changed, reloading.
+INFO 2024-12-09 13:40:38,803 autoreload 12188 29012 Watching for file changes with StatReloader
+INFO 2024-12-09 13:40:49,598 autoreload 28348 30228 Watching for file changes with StatReloader
+INFO 2024-12-09 13:41:17,066 autoreload 28348 30228 C:\Users\Owens\Desktop\Codigo\portillo_propiedades\portillo_propiedades_backend\properties\schedulers.py changed, reloading.
+INFO 2024-12-09 13:41:18,713 autoreload 34468 8816 Watching for file changes with StatReloader
+INFO 2024-12-09 13:41:30,655 autoreload 14416 21776 Watching for file changes with StatReloader
+INFO 2024-12-09 13:42:00,453 autoreload 17288 33244 Watching for file changes with StatReloader
